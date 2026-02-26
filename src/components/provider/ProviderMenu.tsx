@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { env } from "@/env";
 import { toast } from "react-hot-toast";
 import { useMenu } from "../../hooks/useProviderMenu";
@@ -19,6 +19,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+// UI Components
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -74,7 +75,20 @@ export default function ProviderMenu() {
     closeModal,
   } = useMenu();
 
-  const baseUrl = env.NEXT_PUBLIC_API_URL.replace("/api", "");
+  const getFullImageUrl = (path: string | undefined | null) => {
+    if (!path) return null;
+    if (path.startsWith("http")) return path;
+    const baseUrl = env.NEXT_PUBLIC_API_URL.replace("/api", "");
+    const cleanPath = path.replace(/\\/g, "/").replace(/^\//, "");
+    return `${baseUrl}/${cleanPath}`;
+  };
+
+  const previewUrl = useMemo(() => {
+    if (newItem.image instanceof File) {
+      return URL.createObjectURL(newItem.image);
+    }
+    return null;
+  }, [newItem.image]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -92,7 +106,7 @@ export default function ProviderMenu() {
         setNewItem({ ...newItem, image: compressed });
         toast.success("Image optimized", { id: toastId });
       } catch (err) {
-        toast.error("Optimization failed", { id: toastId });
+        toast.error("Optimization failed, using original", { id: toastId });
         setNewItem({ ...newItem, image: file });
       }
     } else {
@@ -100,7 +114,6 @@ export default function ProviderMenu() {
     }
   };
 
-  // Loading State UI
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
@@ -111,7 +124,6 @@ export default function ProviderMenu() {
       </div>
     );
 
-  // Error State UI
   if (fetchError)
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
@@ -129,7 +141,6 @@ export default function ProviderMenu() {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6 max-w-7xl">
-      {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
@@ -140,7 +151,6 @@ export default function ProviderMenu() {
           </p>
         </div>
 
-        {/* Add/Edit Dialog */}
         <Dialog
           open={isModalOpen}
           onOpenChange={(open) => !open && closeModal()}
@@ -164,9 +174,10 @@ export default function ProviderMenu() {
                   : "Fill in the details for your new dish."}
               </DialogDescription>
             </DialogHeader>
+
             <div className="grid gap-4 py-4">
               {/* Image Upload Area */}
-              <div className="flex flex-col items-center justify-center gap-3 py-4 border-2 border-dashed border-slate-200 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer relative">
+              <div className="relative h-44 w-full border-2 border-dashed border-slate-200 rounded-xl overflow-hidden hover:bg-slate-50 transition-all">
                 <Input
                   id="meal-image"
                   type="file"
@@ -176,22 +187,34 @@ export default function ProviderMenu() {
                 />
                 <Label
                   htmlFor="meal-image"
-                  className="cursor-pointer flex flex-col items-center gap-2 w-full"
+                  className="cursor-pointer flex flex-col items-center justify-center h-full w-full"
                 >
-                  <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center mx-auto">
-                    <Camera className="h-6 w-6 text-orange-600" />
+                  {previewUrl ? (
+                    <img
+                      src={previewUrl}
+                      alt="New preview"
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : editingItem?.imageUrl ? (
+                    <img
+                      src={getFullImageUrl(editingItem.imageUrl)!}
+                      alt="Current"
+                      className="absolute inset-0 w-full h-full object-cover opacity-60"
+                    />
+                  ) : null}
+
+                  <div className="relative z-10 flex flex-col items-center bg-white/80 p-3 rounded-lg shadow-sm">
+                    <Camera className="h-6 w-6 text-orange-600 mb-1" />
+                    <span className="text-xs font-bold text-slate-700 text-center text-wrap px-2">
+                      {newItem.image
+                        ? (newItem.image as File).name
+                        : "Click to upload photo"}
+                    </span>
                   </div>
-                  <span className="text-xs font-bold text-slate-600 text-center px-2 block">
-                    {newItem.image
-                      ? newItem.image.name
-                      : editingItem
-                        ? "Change meal photo"
-                        : "Click to upload meal photo"}
-                  </span>
                 </Label>
               </div>
 
-              {/* Form Fields */}
+              {/* Input Fields */}
               <div className="grid gap-2">
                 <Label htmlFor="name">Meal Name *</Label>
                 <Input
@@ -203,6 +226,7 @@ export default function ProviderMenu() {
                   placeholder="e.g. Grilled Chicken"
                 />
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="category">Category *</Label>
@@ -214,9 +238,13 @@ export default function ProviderMenu() {
                     }
                     className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none"
                   >
-                    <option value="" disabled>Select category</option>
+                    <option value="" disabled>
+                      Select category
+                    </option>
                     {CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -233,6 +261,7 @@ export default function ProviderMenu() {
                   />
                 </div>
               </div>
+
               <div className="grid gap-2">
                 <Label htmlFor="desc">Description</Label>
                 <Textarea
@@ -245,6 +274,7 @@ export default function ProviderMenu() {
                 />
               </div>
             </div>
+
             <DialogFooter>
               <Button
                 variant="outline"
@@ -256,7 +286,7 @@ export default function ProviderMenu() {
               <Button
                 onClick={handleSave}
                 disabled={isSubmitting}
-                className="bg-orange-600 hover:bg-orange-700"
+                className="bg-orange-600 hover:bg-orange-700 min-w-[100px]"
               >
                 {isSubmitting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -271,7 +301,7 @@ export default function ProviderMenu() {
         </Dialog>
       </div>
 
-      {/* Search and Filters */}
+      {/* Search & Filters */}
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -287,11 +317,7 @@ export default function ProviderMenu() {
             <button
               key={t}
               onClick={() => setFilter(t)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                filter === t
-                  ? "bg-white text-orange-600 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700"
-              }`}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${filter === t ? "bg-white text-orange-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
             >
               {t.replace("_", " ")}
             </button>
@@ -299,7 +325,7 @@ export default function ProviderMenu() {
         </div>
       </div>
 
-      {/* Menu Table Card */}
+      {/* Table Section */}
       <Card className="border-none shadow-xl shadow-slate-200/50 overflow-hidden">
         <CardContent className="p-0">
           <Table>
@@ -315,39 +341,57 @@ export default function ProviderMenu() {
             <TableBody>
               {filteredItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-20 text-slate-400">
+                  <TableCell
+                    colSpan={5}
+                    className="text-center py-20 text-slate-400"
+                  >
                     <div className="flex flex-col items-center gap-2">
                       <Utensils className="h-8 w-8 opacity-20" />
-                      <p>No meals found matching your criteria.</p>
+                      <p>No meals found.</p>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredItems.map((item) => (
-                  <TableRow key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                  <TableRow
+                    key={item.id}
+                    className="hover:bg-slate-50/50 transition-colors"
+                  >
                     <TableCell className="pl-6">
                       <div className="flex items-center gap-3 py-1">
-                        <div className="h-10 w-10 rounded-lg bg-orange-100 flex items-center justify-center overflow-hidden border border-orange-50">
+                        <div className="h-12 w-12 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden border">
                           {item.imageUrl ? (
                             <img
-                              src={item.imageUrl.startsWith("http") ? item.imageUrl : `${baseUrl}/${item.imageUrl.replace(/\\/g, "/")}`}
+                              src={getFullImageUrl(item.imageUrl)!}
                               alt={item.name}
                               className="h-full w-full object-cover"
-                              onError={(e) => { e.currentTarget.src = "https://placehold.co/100x100?text=Food"; }}
+                              onError={(e) => {
+                                e.currentTarget.src =
+                                  "https://placehold.co/100x100?text=Food";
+                              }}
                             />
                           ) : (
-                            <Utensils className="h-5 w-5 text-orange-600" />
+                            <Utensils className="h-5 w-5 text-slate-400" />
                           )}
                         </div>
-                        <div className="max-w-[150px] md:max-w-[250px]">
-                          <p className="font-semibold text-slate-900 truncate">{item.name}</p>
-                          <p className="text-xs text-slate-400 truncate">{item.description || "No description"}</p>
+                        <div className="max-w-[200px]">
+                          <p className="font-semibold text-slate-900 truncate">
+                            {item.name}
+                          </p>
+                          <p className="text-xs text-slate-400 truncate">
+                            {item.description || "No description"}
+                          </p>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="font-normal capitalize border-slate-200">
-                        {typeof item.category === "object" ? item.category?.name : item.category || "General"}
+                      <Badge
+                        variant="outline"
+                        className="font-normal border-slate-200"
+                      >
+                        {typeof item.category === "object"
+                          ? (item.category as any)?.name
+                          : item.category || "General"}
                       </Badge>
                     </TableCell>
                     <TableCell className="font-bold text-slate-700">
@@ -357,10 +401,17 @@ export default function ProviderMenu() {
                       <button
                         onClick={() => toggleStatus(item.id, item.status)}
                         disabled={updatingId === item.id}
-                        className="cursor-pointer transition-opacity hover:opacity-80 disabled:cursor-not-allowed"
                       >
-                        <Badge className={(item.status || "AVAILABLE") === "AVAILABLE" ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100" : "bg-red-50 text-red-600 hover:bg-red-100"}>
-                          {updatingId === item.id && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                        <Badge
+                          className={
+                            (item.status || "AVAILABLE") === "AVAILABLE"
+                              ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                              : "bg-red-50 text-red-600 hover:bg-red-100"
+                          }
+                        >
+                          {updatingId === item.id && (
+                            <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                          )}
                           {(item.status || "AVAILABLE").replace("_", " ")}
                         </Badge>
                       </button>
@@ -373,15 +424,17 @@ export default function ProviderMenu() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem onClick={() => openEditModal(item)} className="cursor-pointer">
+                          <DropdownMenuItem
+                            onClick={() => openEditModal(item)}
+                            className="cursor-pointer"
+                          >
                             <Pencil className="h-4 w-4 mr-2" /> Edit Meal
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => toggleStatus(item.id, item.status)} className="cursor-pointer">
-                            <RefreshCw className="h-4 w-4 mr-2" />
-                            Mark as {item.status === "AVAILABLE" ? "Out of Stock" : "Available"}
-                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleDelete(item.id)} className="cursor-pointer text-red-600 focus:text-red-600">
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(item.id)}
+                            className="cursor-pointer text-red-600 focus:text-red-600"
+                          >
                             <Trash2 className="h-4 w-4 mr-2" /> Delete Meal
                           </DropdownMenuItem>
                         </DropdownMenuContent>

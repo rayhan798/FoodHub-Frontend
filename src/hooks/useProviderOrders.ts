@@ -12,6 +12,7 @@ export interface ProviderOrder {
   total: number;
   status: OrderStatus;
   createdAt: string;
+  mealImage: string | null; 
 }
 
 export function useOrders() {
@@ -38,13 +39,14 @@ export function useOrders() {
       const result = await response.json();
 
       if (result.success && result.data) {
-        const mapped = result.data.map((order: any) => ({
+        const mapped: ProviderOrder[] = result.data.map((order: any) => ({
           id: order.id,
           customer: order.customer?.name || "Guest User",
           items: order.orderItems?.map((i: any) => `${i.quantity}x ${i.meal?.name}`).join(", ") || "No items",
           total: order.totalPrice,
           status: order.status,
           createdAt: new Date(order.createdAt).toLocaleString("en-GB"),
+          mealImage: order.orderItems?.[0]?.meal?.image || null,
         }));
         setOrders(mapped);
       } else if (response.status === 401) {
@@ -73,7 +75,9 @@ export function useOrders() {
     }
   };
 
-  useEffect(() => { fetchOrders(); }, [fetchOrders]);
+  useEffect(() => { 
+    fetchOrders(); 
+  }, [fetchOrders]);
 
   return { orders, loading, fetchOrders, updateStatus, setOrders };
 }

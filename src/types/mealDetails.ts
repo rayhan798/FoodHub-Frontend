@@ -8,6 +8,12 @@ export interface Review {
   };
 }
 
+
+export interface ProviderInfo {
+  id: string;
+  name: string;
+}
+
 export interface MealDetail {
   id: string;
   name: string;
@@ -16,6 +22,7 @@ export interface MealDetail {
   imageUrl?: string;
   category?: { name: string };
   providerId: string;
+  provider?: ProviderInfo; 
   averageRating?: string | number;
   reviews?: Review[];
 }

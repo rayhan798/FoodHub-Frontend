@@ -12,7 +12,6 @@ node_modules
 !.yarn/versions
 
 # testing
-
 /coverage
 
 # next.js
@@ -40,7 +39,7 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 
 
-.env*
+# .env*
 
 # vercel
 
@@ -52,3 +51,14 @@ yarn-error.log*
 
 *.tsbuildinfo
 next-env.d.ts
+
+
+# local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# actual secret files
+.env*.local

@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { OrderDetailsProps } from "@/types/customerOrderDetails";
+import type { OrderDetail, OrderItem, OrderDetailsProps } from "@/types/customerOrderDetails";
 import { useOrderDetails } from "@/hooks/useCustomerOrderDetails";
 
 export default function OrderDetails({ order }: OrderDetailsProps) {

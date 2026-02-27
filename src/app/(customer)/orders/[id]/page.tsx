@@ -1,8 +1,6 @@
 import { orderService } from "@/services/order.service";
-import OrderDetails, {
-  OrderDetail,
-  OrderItem,
-} from "@/components/customer/OrderDetails";
+import OrderDetails from "@/components/customer/OrderDetails";
+import type { OrderDetail, OrderItem } from "@/types/customerOrderDetails";
 import SuccessModal from "@/components/customer/SuccessModal";
 import { notFound } from "next/navigation";
 

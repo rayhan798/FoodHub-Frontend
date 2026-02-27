@@ -1,6 +1,6 @@
 import { env } from "@/env";
 import { cookies } from "next/headers";
-import { Order } from "@/components/customer/OrdersList";
+import type { Order } from "@/types/customerOrderList";
 import { revalidateTag } from "next/cache";
 
 const API_URL = env.API_URL;

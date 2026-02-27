@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { Order } from "@/types/customerOrderList";
+import type { Order } from "@/types/customerOrderList";
 import { useOrderHelpers } from "@/hooks/useCustomerOrderList";
 
 export default function OrdersList({ orders = [] }: { orders: Order[] }) {

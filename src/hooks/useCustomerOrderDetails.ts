@@ -2,17 +2,20 @@ import { OrderDetail } from "@/types/customerOrderDetails";
 
 export function useOrderDetails(order: OrderDetail) {
   const getImageUrl = (path?: string) => {
+ 
     if (!path || path.trim() === "" || path.includes("undefined")) {
       return "https://placehold.co/150x150?text=Food";
     }
-    if (path.startsWith("http")) return path;
     
+    if (path.startsWith("http")) return path;
+
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
     const cleanPath = path.startsWith("/") ? path : `/${path}`;
 
     if (!cleanPath.includes("uploads")) {
       return `${backendUrl}/uploads${cleanPath}`;
     }
+
     return `${backendUrl}${cleanPath}`;
   };
 

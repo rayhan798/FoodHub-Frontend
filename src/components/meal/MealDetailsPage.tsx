@@ -43,8 +43,8 @@ export default function MealDetailsPage({ id }: { id: string }) {
     <div className="container mx-auto px-4 py-10 max-w-7xl">
       {/* Navigation */}
       <nav className="mb-10">
-        <Link 
-          href="/meals" 
+        <Link
+          href="/meals"
           className="inline-flex items-center text-sm font-bold text-slate-500 hover:text-orange-600 transition-colors group"
         >
           <div className="h-8 w-8 rounded-full border border-slate-200 flex items-center justify-center mr-3 group-hover:border-orange-200 group-hover:bg-orange-50">
@@ -58,13 +58,12 @@ export default function MealDetailsPage({ id }: { id: string }) {
         {/* Left: Image Section */}
         <div className="lg:col-span-6 sticky top-28">
           <div className="relative aspect-[4/5] lg:aspect-square overflow-hidden rounded-[3rem] bg-slate-50 shadow-2xl shadow-slate-200/50 border border-slate-100 group">
-            <Image 
-              src={finalSrc} 
-              alt={meal.name} 
-              fill 
-              className="object-cover transition-transform duration-1000 group-hover:scale-110" 
-              priority 
-              // unoptimized={true} // যদি next.config এ ডোমেইন সেট করা থাকে তবে এটি লাগবে না
+            <Image
+              src={finalSrc}
+              alt={meal.name}
+              fill
+              className="object-cover transition-transform duration-1000 group-hover:scale-110"
+              priority
             />
             {/* Overlay Gradient for Badge Visibility */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -78,7 +77,7 @@ export default function MealDetailsPage({ id }: { id: string }) {
               {meal.category?.name || "General"}
             </Badge>
             <h1 className="text-5xl lg:text-6xl font-black text-slate-900 leading-[1.1] tracking-tight">{meal.name}</h1>
-            
+
             <div className="flex items-center gap-6 text-sm">
               <div className="flex items-center text-amber-500 font-black text-base">
                 <Star className="h-5 w-5 fill-current mr-1.5" />
@@ -108,18 +107,18 @@ export default function MealDetailsPage({ id }: { id: string }) {
             <div className="flex items-center justify-between bg-white border border-slate-100 p-3 rounded-[2rem] shadow-sm max-w-[200px]">
               <span className="font-black text-slate-400 text-xs uppercase pl-4">Qty</span>
               <div className="flex items-center gap-1">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-10 w-10 rounded-full hover:bg-orange-50 hover:text-orange-600"
                   onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
                 <span className="w-8 text-center font-black text-xl text-slate-800">{quantity}</span>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-10 w-10 rounded-full hover:bg-orange-50 hover:text-orange-600"
                   onClick={() => setQuantity((prev) => prev + 1)}
                 >
@@ -129,15 +128,15 @@ export default function MealDetailsPage({ id }: { id: string }) {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                onClick={addToCart} 
+              <Button
+                onClick={addToCart}
                 className="flex-1 bg-orange-600 hover:bg-orange-700 h-20 rounded-[2rem] text-xl font-black shadow-2xl shadow-orange-200 transition-all active:scale-95 group"
               >
                 <ShoppingCart className="mr-3 h-6 w-6 group-hover:animate-bounce" /> ADD TO CART
               </Button>
-              <Button 
-                variant="outline" 
-                className="h-20 px-10 rounded-[2rem] border-2 border-slate-100 font-black hover:bg-slate-50 hover:border-slate-200 transition-all uppercase tracking-widest text-xs" 
+              <Button
+                variant="outline"
+                className="h-20 px-10 rounded-[2rem] border-2 border-slate-100 font-black hover:bg-slate-50 hover:border-slate-200 transition-all uppercase tracking-widest text-xs"
                 asChild
               >
                 <Link href={`/providers/${meal.providerId}`}>Visit Store</Link>
@@ -156,7 +155,7 @@ export default function MealDetailsPage({ id }: { id: string }) {
               Verified Feedback
             </div>
           </div>
-          
+
           <div className="space-y-8">
             {meal.reviews && meal.reviews.length > 0 ? (
               [...meal.reviews].reverse().map((review) => (

@@ -59,7 +59,6 @@ export function useCategories() {
         setCategories(result.data || []);
       } catch (err) {
         console.error("Category Fetch Error:", err);
-        // If API fails, toast the error but the UI will use fallbacks
         toast.error("Using popular categories");
       } finally {
         setLoading(false);

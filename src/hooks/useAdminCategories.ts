@@ -2,7 +2,9 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { Category, CategoryFormData } from "../types/adminCategories";
 
-const API_BASE_URL = "http://localhost:5000/api/categories";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
+  ? `${process.env.NEXT_PUBLIC_API_URL}/categories`
+  : "http://localhost:5000/api/categories";
 
 export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -41,7 +43,7 @@ export function useCategories() {
   }, [fetchCategories]);
 
   const generateSlug = (name: string): string =>
-    name.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-');
+    name.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/[\s_-]+/g, "-");
 
   const filteredCategories = useMemo(() => {
     const list = Array.isArray(categories) ? categories : [];
@@ -64,11 +66,11 @@ export function useCategories() {
 
     setIsSubmitting(true);
     try {
-      const url = editingCategory 
-        ? `${API_BASE_URL}/${editingCategory.id}` 
+      const url = editingCategory
+        ? `${API_BASE_URL}/${editingCategory.id}`
         : API_BASE_URL;
-      
-      const method = editingCategory ? "PUT" : "POST"; 
+
+      const method = editingCategory ? "PUT" : "POST";
 
       const response = await fetch(url, {
         method,
@@ -76,7 +78,7 @@ export function useCategories() {
         body: JSON.stringify({
           name: formData.name,
           status: formData.status,
-          slug: generateSlug(formData.name)
+          slug: generateSlug(formData.name),
         }),
       });
 
@@ -84,7 +86,7 @@ export function useCategories() {
 
       if (response.ok && result.success) {
         toast.success(result.message || "Operation successful");
-        fetchCategories(); 
+        fetchCategories();
         handleCloseDialog();
       } else {
         throw new Error(result.message || "Failed to save data");
@@ -98,13 +100,13 @@ export function useCategories() {
 
   const deleteCategory = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this category?")) return;
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/${id}`, { method: "DELETE" });
       const result = await response.json();
 
       if (response.ok && result.success) {
-        setCategories(prev => prev.filter(c => c.id !== id));
+        setCategories((prev) => prev.filter((c) => c.id !== id));
         toast.success("Category deleted successfully");
       } else {
         toast.error(result.message || "Delete failed");

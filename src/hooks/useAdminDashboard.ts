@@ -12,6 +12,10 @@ const CONFIG_MAP: Record<string, { icon: LucideIcon, color: string }> = {
   "Total Orders": { icon: ShoppingBag, color: "text-purple-600" },
 };
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
+  ? `${process.env.NEXT_PUBLIC_API_URL}/admin/overview`
+  : "http://localhost:5000/api/admin/overview";
+
 export function useAdminOverview() {
   const [stats, setStats] = useState<DashboardStat[]>([]);
   const [providers, setProviders] = useState<ProviderRequest[]>([]);
@@ -21,7 +25,7 @@ export function useAdminOverview() {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:5000/api/admin/overview");
+        const response = await fetch(API_BASE_URL);
         
         if (!response.ok) throw new Error("Failed to connect to the server");
         

@@ -25,12 +25,12 @@ export function useCheckout() {
       if (items.length === 0) {
         router.push("/cart");
       } else {
-        setCartItems(items);
+        Promise.resolve().then(() => setCartItems<any[]>(items));
       }
     } else {
       router.push("/meals");
     }
-    setLoading(false);
+    Promise.resolve().then(() => setLoading(false));
   }, [router]);
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);

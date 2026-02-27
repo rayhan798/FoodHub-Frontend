@@ -24,7 +24,6 @@ export function useBrowseMeals() {
         setLoading(true);
         const { data: res } = await mealService.getMeals({});
         
-        // আপনার অরিজিনাল ডাটা হ্যান্ডলিং লজিক
         if (res && Array.isArray(res)) {
           setAllMeals(res as ExtendedMeal[]);
         } else if (res && typeof res === "object" && "data" in res) {

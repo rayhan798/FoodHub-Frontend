@@ -25,7 +25,7 @@ export function useCheckout() {
       if (items.length === 0) {
         router.push("/cart");
       } else {
-        Promise.resolve().then(() => setCartItems<any[]>(items));
+        Promise.resolve().then(() => setCartItems(items));
       }
     } else {
       router.push("/meals");

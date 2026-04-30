@@ -1,13 +1,11 @@
 import ProviderProfilePage from "@/components/providers/ProviderProfilePage";
 
-// এটি একটি Server Component
 type Props = {
   params: Promise<{ id: string }>;
 };
 
 export default function ProviderProfileInternalPage({ params }: Props) {
-  // আমরা সার্ভার থেকে সরাসরি params পাস করছি
-  // ProviderProfilePage তার ভেতরে এটি use(params) দিয়ে হ্যান্ডেল করবে
+
   return (
     <div className="space-y-6">
        <div className="px-2">

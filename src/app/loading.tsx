@@ -92,7 +92,7 @@ export default function Loading() {
       <motion.p 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 5 }} // ৫ সেকেন্ড পর দেখাবে যদি লোড না হয়
+        transition={{ delay: 5 }}
         className="absolute bottom-10 text-xs text-slate-400 text-center px-6"
       >
         Taking too long? Check your internet connection.

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Star, Send, Loader2, AlertCircle } from "lucide-react"; 
 import { toast } from "react-hot-toast";
-import { env } from "@/env";
+// import { env } from "@/env"; 
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client"; 
 
@@ -19,10 +19,11 @@ export default function ProviderReviewForm({ providerId, onSuccess }: ProviderRe
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const API_URL = "/api/reviews";
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ১. ক্লায়েন্ট সাইড ভ্যালিডেশন
     if (!session) {
       toast.error("Please login to share your experience");
       return;
@@ -39,54 +40,39 @@ export default function ProviderReviewForm({ providerId, onSuccess }: ProviderRe
     }
 
     setIsSubmitting(true);
-    
-    // লোডিং টোস্ট (অপশনাল কিন্তু UX এর জন্য ভালো)
     const loadingToast = toast.loading("Sending your feedback...");
 
     try {
-      const token = session?.session?.token;
-
       const payload = {
         providerId: providerId,
         rating: Number(rating),
         comment: comment.trim()
       };
 
-      const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/reviews`, {
+      const response = await fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": token ? `Bearer ${token}` : "",
         },
-        credentials: "include", 
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
       const result = await response.json();
 
-      // ২. এরর হ্যান্ডলিং (Response Status অনুযায়ী)
       if (!response.ok) {
-        // যদি নির্দিষ্ট ভ্যালিডেশন এরর থাকে
-        if (result.errors || result.message) {
-          const errorMsg = Array.isArray(result.errors) 
-            ? result.errors.map((err: any) => err.message).join(", ")
-            : result.message;
-          throw new Error(errorMsg || "Submission failed");
-        }
+        if (response.status === 401) throw new Error("Please login again to continue.");
+        if (response.status === 403) throw new Error("Permission denied.");
         
-        if (response.status === 401) throw new Error("Session expired. Please re-login.");
-        if (response.status === 403) throw new Error("You are not authorized to review this kitchen.");
-        
-        throw new Error("Something went wrong at the server.");
+        throw new Error(result.message || "Failed to submit review");
       }
 
-      // ৩. সাকসেস স্টেট
       toast.success("Thank you! Feedback submitted.", { id: loadingToast });
       setRating(0);
       setComment("");
 
       if (onSuccess) {
-        onSuccess(); // ডাটা রিফ্রেশ (যেমন: রিভিউ লিস্ট আপডেট)
+        onSuccess();
       }
       
     } catch (error: any) {
@@ -97,7 +83,6 @@ export default function ProviderReviewForm({ providerId, onSuccess }: ProviderRe
     }
   };
 
-  // প্রাথমিক সেশন লোডিং স্টেট
   if (isPending) return (
     <div className="p-10 text-center bg-orange-50/30 rounded-[2.5rem] border border-dashed border-orange-200">
       <Loader2 className="animate-spin mx-auto text-orange-600 h-8 w-8" />
@@ -118,7 +103,6 @@ export default function ProviderReviewForm({ providerId, onSuccess }: ProviderRe
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Rating Stars Section */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => (

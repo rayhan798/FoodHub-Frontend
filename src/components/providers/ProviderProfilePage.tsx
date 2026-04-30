@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect, useCallback, use } from "react";
 import MealCard from "@/components/meal/MealCard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,7 +8,7 @@ import {
   MapPin, Phone, Info, Loader2, AlertCircle,
   ArrowLeft, Edit3, CheckCircle2, Save, X
 } from "lucide-react";
-import { env } from "@/env";
+// import { env } from "@/env";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,11 +38,12 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
   const [editData, setEditData] = useState({ address: "", phone: "", description: "" });
   const [updating, setUpdating] = useState(false);
 
-  // ১. প্রোফাইল ডাটা লোড করা
+  const API_BASE = "/api/providers";
+
   const fetchProviderProfile = useCallback(async () => {
     if (!id || id === "undefined") return;
     try {
-      const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/providers/${id}?t=${Date.now()}`, {
+      const res = await fetch(`${API_BASE}/${id}?t=${Date.now()}`, {
         cache: 'no-store'
       });
       if (!res.ok) throw new Error("Kitchen not found");
@@ -69,27 +69,17 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
 
   const isOwner = provider?.userId === authUser?.id;
 
-  // ২. প্রোফাইল আপডেট ফাংশন (FULLY FIXED)
   const handleUpdateProfile = async () => {
-    // Client-side Validation
-    if (!editData.address.trim()) {
-      toast.error("Address is required");
-      return;
-    }
-    if (!editData.phone.trim()) {
-      toast.error("Phone number is required");
-      return;
-    }
+    if (!editData.address.trim()) return toast.error("Address is required");
+    if (!editData.phone.trim()) return toast.error("Phone number is required");
 
     setUpdating(true);
     try {
-      const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/providers/profile`, {
+      const res = await fetch(`${API_BASE}/profile`, {
         method: "PATCH", 
         headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}` 
+          "Content-Type": "application/json"
         },
-        // Better-Auth সেশনের জন্য credentials include করা হয়েছে
         credentials: "include", 
         body: JSON.stringify(editData),
       });
@@ -101,23 +91,20 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
         setIsEditing(false);
         setProvider(prev => prev ? { ...prev, ...editData } : null);
       } else {
-        // Status code ভিত্তিক Error Handling
         if (res.status === 401) {
           throw new Error("Your session has expired. Please log in again.");
-        } else if (res.status === 403) {
-          throw new Error("You don't have permission to perform this action.");
         } else {
-          throw new Error(result.message || "Update failed. Please try again.");
+          throw new Error(result.message || "Update failed.");
         }
       }
     } catch (err: any) {
-      toast.error(err.message || "Something went wrong. Check your connection.");
+      toast.error(err.message || "Something went wrong.");
       console.error("Update Error:", err);
     } finally {
       setUpdating(false);
     }
   };
-
+  
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
       <Loader2 className="h-12 w-12 animate-spin text-orange-600" />

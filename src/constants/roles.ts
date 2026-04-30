@@ -5,4 +5,4 @@ export const Roles = {
 };
 
 
-export type Role = keyof typeof Roles;
+export type Role = (typeof Roles)[keyof typeof Roles];

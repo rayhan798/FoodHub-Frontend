@@ -1,78 +1,88 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Roles } from "./constants/roles";
+import { Roles, type Role } from "./constants/roles";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ✅ Skip internal + auth API routes
   if (
-    pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
-    pathname.includes("favicon.ico")
+    pathname.startsWith("/api/auth") ||
+    pathname.includes("favicon.ico") ||
+    /\.(.*)$/.test(pathname)
   ) {
     return NextResponse.next();
   }
 
-  // ❌ IMPORTANT: prevent RSC redirect loop
-  if (request.headers.get("sec-fetch-dest") === "empty") {
-    return NextResponse.next();
-  }
+  const sessionToken =
+    request.cookies.get("__Secure-better-auth.session_token")?.value ||
+    request.cookies.get("better-auth.session_token")?.value;
+  
+  const rawRole = request.cookies.get("user_role")?.value;
+  const userRole = rawRole?.toUpperCase() as Role | undefined;
 
-  // ✅ READ USER FROM COOKIE (NOT API CALL)
-  const sessionToken = request.cookies.get("session_token")?.value;
+  const isAuthenticated = Boolean(sessionToken);
 
-  const isAuthenticated = !!sessionToken;
+  const isAdminPath = pathname.startsWith("/admin");
+  const isProviderPath = pathname.startsWith("/provider");
+  const isCustomerPrivatePath = 
+    pathname.startsWith("/cart") || 
+    pathname.startsWith("/checkout") || 
+    pathname.startsWith("/orders") || 
+    pathname.startsWith("/profile");
 
-  // ⚠️ middleware should NOT fetch DB/session
-  // role detection should be backend-side OR frontend-side
+  const isAuthPage = pathname === "/login" || pathname === "/register";
 
-  // 🚫 NOT LOGGED IN → protect routes only
-  const protectedPaths = [
-    "/dashboard",
-    "/cart",
-    "/checkout",
-    "/orders",
-    "/profile",
-    "/provider",
-    "/admin",
-  ];
-
-  const isProtected = protectedPaths.some((p) =>
-    pathname.startsWith(p)
-  );
-
-  if (!isAuthenticated && isProtected) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  // 👤 If not authenticated, allow public routes
   if (!isAuthenticated) {
+    if (isAdminPath || isProviderPath || isCustomerPrivatePath) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
     return NextResponse.next();
   }
 
-  // 👮 ADMIN ONLY ROUTE BLOCK (optional safe check via path)
-  if (pathname.startsWith("/admin")) {
-    // role validation should happen in backend/API
-    return NextResponse.next();
-  }
+  if (isAuthenticated) {
+    
+    if (userRole === Roles.ADMIN && isAdminPath) return NextResponse.next();
+    if (userRole === Roles.PROVIDER && isProviderPath) return NextResponse.next();
+    if (userRole === Roles.CUSTOMER && isCustomerPrivatePath) return NextResponse.next();
 
-  // 🧑 PROVIDER ONLY ROUTE BLOCK
-  if (pathname.startsWith("/provider")) {
-    return NextResponse.next();
+    if (isAuthPage) {
+      if (userRole === Roles.ADMIN) return NextResponse.redirect(new URL("/admin", request.url));
+      if (userRole === Roles.PROVIDER) return NextResponse.redirect(new URL("/provider/dashboard", request.url));
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+
+    if (userRole === Roles.ADMIN) {
+      if (isProviderPath || isCustomerPrivatePath) {
+        return NextResponse.redirect(new URL("/admin", request.url));
+      }
+    }
+
+    if (userRole === Roles.PROVIDER) {
+      if (isAdminPath || isCustomerPrivatePath) {
+        return NextResponse.redirect(new URL("/provider/dashboard", request.url));
+      }
+    }
+
+    if (userRole === Roles.CUSTOMER || !userRole) {
+      if (isAdminPath || isProviderPath) {
+        return NextResponse.redirect(new URL("/", request.url));
+      }
+    }
   }
 
   return NextResponse.next();
 }
 
-// ✅ IMPORTANT matcher (NO api, NO _next)
 export const config = {
   matcher: [
-    "/dashboard/:path*",
-    "/cart",
-    "/checkout",
-    "/orders/:path*",
-    "/profile",
-    "/provider/:path*",
-    "/admin/:path*",
+    /*
+     * - api/auth (Better Auth handles this)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    "/((?!api/auth|_next/static|_next/image|favicon.ico).*)",
   ],
 };

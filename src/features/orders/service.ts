@@ -2,7 +2,6 @@ import { Order } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
-// হেল্পার ফাংশন টোকেন পাওয়ার জন্য (যদি আপনি localStorage ব্যবহার করেন)
 const getAuthHeader = () => ({
   "Authorization": `Bearer ${localStorage.getItem("token")}`,
   "Content-Type": "application/json",

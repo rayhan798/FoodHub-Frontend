@@ -13,7 +13,7 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
-  status: UserStatus; // ✅ ইন্টারফেসে status যোগ করা হলো
+  status: UserStatus; 
   image?: string;
 }
 
@@ -41,13 +41,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         const sessionUser = data.user as any; 
 
-        // ২. setUser করার সময় status ফিল্ডটি সেশন থেকে নেওয়া হয়েছে
         setUser({
           id: sessionUser.id,
           name: sessionUser.name,
           email: sessionUser.email,
           role: sessionUser.role ?? "customer",
-          status: sessionUser.status ?? "PENDING", // ✅ সেশন থেকে status ম্যাপ করা হলো
+          status: sessionUser.status ?? "PENDING",
           image: sessionUser.image ?? undefined,
         });
       } catch {

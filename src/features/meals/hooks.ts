@@ -17,7 +17,7 @@ export function useMeal(id: string) {
   return useQuery<Meal, Error>({
     queryKey: ["meal", id],
     queryFn: () => getMealById(id),
-    enabled: !!id, // ID না থাকলে কুয়েরি চলবে না
+    enabled: !!id,
   });
 }
 

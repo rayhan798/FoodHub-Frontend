@@ -23,8 +23,6 @@ export async function getMealById(id: string): Promise<Meal> {
 }
 
 export async function getMealsByProvider(providerId: string): Promise<Meal[]> {
-  // আপনার ব্যাকএন্ড রাউট অনুযায়ী: /api/providers/:id রাউটটি মেনুসহ ডেটা দেয়
-  // অথবা যদি আলাদা রাউট থাকে /api/providers/:id/meals সেটিও ব্যবহার করা যায়
   const res = await fetch(`${API_URL}/providers/${providerId}/meals`);
 
   if (!res.ok) {

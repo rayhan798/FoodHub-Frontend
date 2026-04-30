@@ -3,7 +3,7 @@ import { Meal } from "../meals/types";
 export type OrderStatus =
   | "pending"
   | "confirmed"
-  | "preparing" // ব্যাকএন্ড রাউট অনুযায়ী preparing যোগ করা হলো
+  | "preparing"
   | "shipped"
   | "delivered"
   | "cancelled";
@@ -15,7 +15,7 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
-  items: OrderItem[]; // সাধারণত অর্ডারে আইটেম এবং কোয়ান্টিটি থাকে
+  items: OrderItem[]; 
   total: number;
   status: OrderStatus;
   createdAt: string;

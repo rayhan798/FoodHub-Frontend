@@ -23,7 +23,6 @@ export function useCreateOrder() {
   return useMutation({
     mutationFn: createOrder,
     onSuccess: () => {
-      // অর্ডার তৈরি হলে লিস্ট রিফ্রেশ করবে
       queryClient.invalidateQueries({ queryKey: ["orders"] });
     },
   });

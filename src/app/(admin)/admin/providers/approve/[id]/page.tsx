@@ -25,19 +25,14 @@ export default function ProviderApprovePage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // ১. প্রোভাইডারের ডিটেইলস ফেচ করা (ঐচ্ছিক, যদি আপনি ডিটেইলস দেখাতে চান)
-  // আপাতত আমরা শুধু আইডি দিয়ে কাজ করছি
   useEffect(() => {
-    // এখানে আপনি চাইলে একটি GET রিকোয়েস্ট পাঠিয়ে ডাটা আনতে পারেন
-    // আপাতত আমরা জাস্ট আইডিটি সেট করছি টেস্ট করার জন্য
     setLoading(false);
   }, [params.id]);
 
-  // ২. এপ্রুভ বা রিজেক্ট করার ফাংশন
   const handleStatusUpdate = async (newStatus: "APPROVED" | "REJECTED") => {
     try {
       setSubmitting(true);
-      const response = await fetch(`http://localhost:5000/api/admin/providers/approve/${params.id}`, {
+      const response = await fetch(`https://foodhub-backend-seven.vercel.app/api/admin/providers/approve/${params.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
@@ -47,7 +42,7 @@ export default function ProviderApprovePage() {
 
       if (result.success) {
         toast.success(`Provider has been ${newStatus.toLowerCase()}!`);
-        router.push("/admin"); // কাজ শেষ হলে ড্যাশবোর্ডে ফেরত যাবে
+        router.push("/admin"); 
         router.refresh();
       } else {
         toast.error(result.message || "Failed to update status");

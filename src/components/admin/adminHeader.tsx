@@ -11,15 +11,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/features/auth/context"; // ১. useAuth ইম্পোর্ট করুন
+import { useAuth } from "@/features/auth/context";
 
 export default function AdminHeader() {
-  // ২. ইউজার ডেটা এবং লগআউট ফাংশন নিয়ে আসুন
   const { user, logout, isLoading } = useAuth();
 
   return (
     <header className="h-16 border-b bg-white flex items-center justify-between px-6 sticky top-0 z-30 shadow-sm">
-      {/* ১. লেফট সাইড: সার্চ বার */}
       <div className="flex items-center gap-4 flex-1">
         <Button variant="ghost" size="icon" className="md:hidden">
           <Menu className="h-5 w-5 text-slate-600" />
@@ -34,7 +32,6 @@ export default function AdminHeader() {
         </div>
       </div>
 
-      {/* ২. রাইট সাইড: নোটিফিকেশন এবং প্রোফাইল */}
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" className="relative text-slate-500 hover:text-orange-600 hover:bg-orange-50 rounded-full">
           <Bell className="h-5 w-5" />
@@ -43,12 +40,11 @@ export default function AdminHeader() {
         
         <div className="h-8 w-[1px] bg-slate-200 mx-2 hidden sm:block"></div>
 
-        {/* প্রোফাইল ড্রপডাউন */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-3 p-1 pr-3 hover:bg-slate-50 rounded-full transition-all outline-none">
               <div className="h-9 w-9 rounded-full bg-orange-100 flex items-center justify-center border-2 border-white shadow-sm overflow-hidden">
-                {/* ৩. ইউজারের ইমেজ থাকলে সেটি দেখান */}
+
                 {user?.image ? (
                   <img src={user.image} alt={user.name} className="h-full w-full object-cover" />
                 ) : (
@@ -79,9 +75,8 @@ export default function AdminHeader() {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             
-            {/* ৪. লগআউট বাটন কানেক্ট করা হয়েছে */}
             <DropdownMenuItem 
-              onClick={() => logout()} // লগআউট কল
+              onClick={() => logout()} 
               className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-600"
             >
               <LogOut className="mr-2 h-4 w-4" />

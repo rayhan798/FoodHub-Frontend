@@ -1,14 +1,11 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Users,
   Store,
-  DollarSign,
   ShoppingBag,
-  TrendingUp,
   AlertCircle,
   ArrowUpRight,
   ArrowDownRight,
@@ -27,13 +24,18 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import Link from "next/link";
 
+/* --- Custom BDT Icon Component --- */
+const BdtIcon = ({ className }: { className?: string }) => (
+  <span className={className} style={{ fontWeight: 'bold' }}>৳</span>
+);
+
 /* ---------------- TYPES & INTERFACES ---------------- */
 interface DashboardStat {
   label: string;
   value: string;
   trend: string;
   trendUp: boolean;
-  icon: LucideIcon;
+  icon: any; 
   color: string;
 }
 
@@ -51,16 +53,15 @@ interface RawStat {
   trendUp: boolean;
 }
 
-// ✅ RawProvider ইন্টারফেস আপডেট করা হয়েছে
 interface RawProvider {
   id: string;
   restaurantName?: string;
   name?: string;
   owner?: string;
-  status?: string; // সরাসরি স্ট্যাটাস থাকতে পারে
+  status?: string;
   user?: {
     name?: string;
-    status?: string; // অথবা ইউজার অবজেক্টের ভেতর থাকতে পারে
+    status?: string;
   };
 }
 
@@ -75,7 +76,7 @@ export default function AdminDashboard() {
         setLoading(true);
       
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/overview`,
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/overview`,
         );
 
         if (!response.ok) throw new Error("Failed to connect to the server");
@@ -83,25 +84,32 @@ export default function AdminDashboard() {
         const result = await response.json();
 
         if (result.success) {
-          const configMap: Record<string, { icon: LucideIcon; color: string }> =
+          const configMap: Record<string, { icon: any; color: string }> =
             {
-              "Total Revenue": { icon: DollarSign, color: "text-emerald-600" },
+              "Total Revenue": { icon: BdtIcon, color: "text-emerald-600" },
               "Active Customers": { icon: Users, color: "text-blue-600" },
               "Food Providers": { icon: Store, color: "text-orange-600" },
               "Total Orders": { icon: ShoppingBag, color: "text-purple-600" },
             };
 
           const mappedStats: DashboardStat[] = result.data.stats.map(
-            (s: RawStat) => ({
-              ...s,
-              icon: configMap[s.label]?.icon || AlertCircle,
-              color: configMap[s.label]?.color || "text-slate-600",
-            }),
+            (s: RawStat) => {
+              let displayValue = s.value;
+              if (s.label === "Total Revenue" && displayValue.startsWith("$")) {
+                displayValue = displayValue.replace("$", "৳");
+              }
+
+              return {
+                ...s,
+                value: displayValue,
+                icon: configMap[s.label]?.icon || AlertCircle,
+                color: configMap[s.label]?.color || "text-slate-600",
+              };
+            },
           );
 
           setStats(mappedStats);
 
-          // ✅ ম্যাপিং লজিক ফিক্স করা হয়েছে (Optional Chaining সহ)
           const mappedProviders: ProviderRequest[] = (
             result.data.providers || []
           ).map((p: RawProvider) => ({
@@ -167,7 +175,7 @@ export default function AdminDashboard() {
                   {stat.label}
                 </CardTitle>
                 <div
-                  className={`p-2 rounded-lg bg-slate-50 group-hover:bg-white transition-colors ${stat.color}`}
+                  className={`p-2 rounded-lg bg-slate-50 group-hover:bg-white transition-colors h-9 w-9 flex items-center justify-center ${stat.color}`}
                 >
                   <Icon className="h-5 w-5" />
                 </div>
@@ -228,7 +236,7 @@ export default function AdminDashboard() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right pr-6">
-                        <Button asChild size="sm" variant="outline">
+                        <Button asChild size="sm" variant="outline" className="rounded-xl">
                           <Link href={`/admin/providers/approve/${shop.id}`}>
                             Review Request
                           </Link>
@@ -252,13 +260,19 @@ export default function AdminDashboard() {
         </Card>
 
         {/* System Insights */}
-        <Card className="rounded-2xl border-slate-100 shadow-sm p-6">
+        <Card className="rounded-2xl border-slate-100 shadow-sm p-6 bg-white">
           <h3 className="font-semibold mb-4">Quick Insights</h3>
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="h-2 w-2 rounded-full bg-orange-500" />
               <p className="text-sm text-slate-600">
                 {providers.length} new providers awaiting approval.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-emerald-500" />
+              <p className="text-sm text-slate-600">
+                System status is normal.
               </p>
             </div>
           </div>

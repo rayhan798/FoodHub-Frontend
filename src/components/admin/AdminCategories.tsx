@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,8 +32,7 @@ import {
 import { Plus, Edit2, Trash2, Search, Utensils, Hash, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-// আপনার এক্সপ্রেস ব্যাকএন্ডের ইউআরএল এখানে দিন 
-const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/categories`;
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/categories`;
 
 interface Category {
   id: string;
@@ -60,14 +58,12 @@ export default function AdminCategoriesPage() {
     status: "ACTIVE" as "ACTIVE" | "INACTIVE",
   });
 
-  // ১. ডাটা ফেচিং (এক্সপ্রেস ব্যাকএন্ড থেকে)
   const fetchCategories = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(API_BASE_URL);
       const result = await response.json();
 
-      // এক্সপ্রেস সাধারণত { success: true, data: [] } পাঠায়
       if (result.success && Array.isArray(result.data)) {
         setCategories(result.data);
       } else if (Array.isArray(result)) {
@@ -95,7 +91,6 @@ export default function AdminCategoriesPage() {
     );
   }, [categories, searchTerm]);
 
-  // ২. ক্যাটাগরি তৈরি বা আপডেট (FIXED লজিক)
   const handleSubmit = async () => {
     if (!formData.name.trim()) {
       toast.error("Category name is required");
@@ -108,7 +103,7 @@ export default function AdminCategoriesPage() {
         ? `${API_BASE_URL}/${editingCategory.id}` 
         : API_BASE_URL;
       
-      const method = editingCategory ? "PUT" : "POST"; // এক্সপ্রেসের জন্য সাধারণত PUT/PATCH
+      const method = editingCategory ? "PUT" : "POST";
 
       const response = await fetch(url, {
         method,
@@ -124,7 +119,7 @@ export default function AdminCategoriesPage() {
 
       if (response.ok && result.success) {
         toast.success(result.message || "Operation successful");
-        fetchCategories(); // লিস্ট রিফ্রেশ
+        fetchCategories();
         handleCloseDialog();
       } else {
         throw new Error(result.message || "Failed to save data");

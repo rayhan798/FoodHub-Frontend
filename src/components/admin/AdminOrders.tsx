@@ -23,18 +23,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-/* ================= UPDATED TYPES (Matching Backend) ================= */
+/* --- Custom BDT Symbol --- */
+const BDT = "৳";
+
+/* ================= TYPES ================= */
 interface AdminOrder {
   id: string;
   totalPrice: number;
   status: "PENDING" | "PREPARING" | "READY" | "DELIVERED" | "CANCELLED"; 
   createdAt: string;
-  customer: { // Changed from 'user' to 'customer'
+  customer: {
     name: string;
     email?: string;
   };
-  orderItems: { // Data nested in items
+  orderItems: {
     meal: {
+      name: string; 
       provider: {
         restaurantName: string;
       };
@@ -45,6 +49,7 @@ interface AdminOrder {
 interface ApiResponse {
   success: boolean;
   data: AdminOrder[];
+  message?: string;
 }
 
 export default function AdminAllOrdersPage() {
@@ -56,15 +61,36 @@ export default function AdminAllOrdersPage() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/orders`, {
-        credentials: "include",
+      
+      const baseUrl = env.NEXT_PUBLIC_API_URL.endsWith('/') 
+        ? env.NEXT_PUBLIC_API_URL.slice(0, -1) 
+        : env.NEXT_PUBLIC_API_URL;
+
+      const res = await fetch(`${baseUrl}/orders`, {
+        method: "GET",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        credentials: "include", 
       });
-      if (!res.ok) throw new Error("Failed to fetch orders");
-      const result: ApiResponse = await res.json();
-      setOrders(result.data || []);
-    } catch (err) {
-      console.error("Fetch Error:", err);
-      toast.error("Could not load orders from server");
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.message || "Failed to fetch orders");
+      }
+
+      if (Array.isArray(result)) {
+        setOrders(result);
+      } else if (result && result.data && Array.isArray(result.data)) {
+        setOrders(result.data);
+      } else {
+        setOrders([]);
+      }
+
+    } catch (err: any) {
+      toast.error(err.message || "Could not load orders from server");
     } finally {
       setLoading(false);
     }
@@ -79,31 +105,37 @@ export default function AdminAllOrdersPage() {
 
     try {
       setActionLoading(orderId);
-      const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/orders/${orderId}/status`, {
+      const baseUrl = env.NEXT_PUBLIC_API_URL.endsWith('/') 
+        ? env.NEXT_PUBLIC_API_URL.slice(0, -1) 
+        : env.NEXT_PUBLIC_API_URL;
+
+      const res = await fetch(`${baseUrl}/orders/${orderId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "CANCELLED" }),
         credentials: "include",
       });
 
-      if (!res.ok) throw new Error("Failed to cancel order");
+      const result = await res.json();
+
+      if (!res.ok) throw new Error(result.message || "Failed to cancel order");
 
       toast.success("Order cancelled successfully");
-      fetchOrders();
-    } catch (err) {
-      toast.error("Could not cancel order");
+      fetchOrders(); 
+    } catch (err: any) {
+      toast.error(err.message || "Could not cancel order");
     } finally {
       setActionLoading(null);
     }
   };
 
-  /* ---------------- FIXED DYNAMIC SEARCH ---------------- */
   const filteredOrders = useMemo(() => {
+    if (!Array.isArray(orders)) return [];
     return orders.filter((order) => {
       const searchStr = searchTerm.toLowerCase();
       const customerName = order.customer?.name?.toLowerCase() || "";
       const providerName = order.orderItems?.[0]?.meal?.provider?.restaurantName?.toLowerCase() || "";
-      const orderId = order.id.toLowerCase();
+      const orderId = order.id?.toLowerCase() || "";
 
       return (
         orderId.includes(searchStr) ||
@@ -123,7 +155,7 @@ export default function AdminAllOrdersPage() {
     };
     return (
       <Badge className={`${styles[status] || "bg-slate-100"} border-none rounded-full px-3 capitalize`}>
-        {status?.toLowerCase().replace('_', ' ')}
+        {status?.toLowerCase().replace('_', ' ') || 'Unknown'}
       </Badge>
     );
   };
@@ -163,94 +195,95 @@ export default function AdminAllOrdersPage() {
           </Button>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader className="bg-slate-50/50">
-              <TableRow>
-                <TableHead className="pl-6">Order ID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Provider</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Date & Time</TableHead>
-                <TableHead className="text-right pr-6">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredOrders.length === 0 ? (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-slate-50/50">
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-20 text-slate-400">
-                    <div className="flex flex-col items-center gap-2">
-                       <Search className="h-8 w-8 opacity-20" />
-                       <p>No real-time orders found in the system.</p>
-                    </div>
-                  </TableCell>
+                  <TableHead className="pl-6 text-slate-600 font-bold uppercase text-[11px]">Order ID</TableHead>
+                  <TableHead className="text-slate-600 font-bold uppercase text-[11px]">Customer</TableHead>
+                  <TableHead className="text-slate-600 font-bold uppercase text-[11px]">Provider</TableHead>
+                  <TableHead className="text-slate-600 font-bold uppercase text-[11px]">Amount</TableHead>
+                  <TableHead className="text-slate-600 font-bold uppercase text-[11px]">Status</TableHead>
+                  <TableHead className="text-slate-600 font-bold uppercase text-[11px]">Date & Time</TableHead>
+                  <TableHead className="text-right pr-6 text-slate-600 font-bold uppercase text-[11px]">Action</TableHead>
                 </TableRow>
-              ) : (
-                filteredOrders.map((order) => (
-                  <TableRow key={order.id} className="hover:bg-slate-50/50 transition-colors group">
-                    <TableCell className="pl-6 font-mono text-xs font-semibold text-orange-600">
-                      #{order.id.slice(-8).toUpperCase()}
-                    </TableCell>
-                    
-                    {/* Fixed: Customer Name */}
-                    <TableCell className="font-medium text-slate-700">
-                      {order.customer?.name || "Guest User"}
-                    </TableCell>
-                    
-                    {/* Fixed: Provider Name (from nested relation) */}
-                    <TableCell>
-                      <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-none font-normal">
-                        {order.orderItems?.[0]?.meal?.provider?.restaurantName || "N/A"}
-                      </Badge>
-                    </TableCell>
-                    
-                    <TableCell className="font-bold text-slate-900">
-                      ${Number(order.totalPrice).toFixed(2)}
-                    </TableCell>
-                    
-                    <TableCell>{getStatusBadge(order.status)}</TableCell>
-                    
-                    <TableCell className="text-slate-500 text-xs">
-                      {new Date(order.createdAt).toLocaleString('en-GB', {
-                        day: '2-digit', month: 'short', year: 'numeric',
-                        hour: '2-digit', minute: '2-digit'
-                      })}
-                    </TableCell>
-                    
-                    <TableCell className="text-right pr-6">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-slate-100 rounded-full">
-                            <MoreVertical className="h-4 w-4 text-slate-400" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-xl w-40 shadow-xl border-slate-100">
-                          <DropdownMenuItem className="gap-2 cursor-pointer py-2 text-slate-600">
-                            <Eye className="h-4 w-4" /> View Details
-                          </DropdownMenuItem>
-                          
-                          {order.status !== "CANCELLED" && order.status !== "DELIVERED" && (
-                            <DropdownMenuItem 
-                              onClick={() => handleCancelOrder(order.id)}
-                              className="gap-2 text-red-600 cursor-pointer py-2 focus:bg-red-50 focus:text-red-700"
-                              disabled={actionLoading === order.id}
-                            >
-                              {actionLoading === order.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <XCircle className="h-4 w-4" />
-                              )}
-                              Cancel Order
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+              </TableHeader>
+              <TableBody>
+                {filteredOrders.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-20 text-slate-400">
+                      <div className="flex flex-col items-center gap-2">
+                         <Search className="h-8 w-8 opacity-20" />
+                         <p>No real-time orders found in the system.</p>
+                         <Button variant="ghost" onClick={fetchOrders} className="text-orange-600">Retry</Button>
+                      </div>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  filteredOrders.map((order) => (
+                    <TableRow key={order.id} className="hover:bg-slate-50/50 transition-colors group">
+                      <TableCell className="pl-6 font-mono text-xs font-semibold text-orange-600">
+                        #{order.id ? order.id.slice(-8).toUpperCase() : "N/A"}
+                      </TableCell>
+                      
+                      <TableCell className="font-medium text-slate-700">
+                        {order.customer?.name || "Guest User"}
+                      </TableCell>
+                      
+                      <TableCell>
+                        <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-none font-normal">
+                          {order.orderItems?.[0]?.meal?.provider?.restaurantName || "N/A"}
+                        </Badge>
+                      </TableCell>
+                      
+                      <TableCell className="font-bold text-slate-900">
+                        {BDT}{Number(order.totalPrice || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </TableCell>
+                      
+                      <TableCell>{getStatusBadge(order.status)}</TableCell>
+                      
+                      <TableCell className="text-slate-500 text-xs">
+                        {order.createdAt ? new Date(order.createdAt).toLocaleString('en-GB', {
+                          day: '2-digit', month: 'short', year: 'numeric',
+                          hour: '2-digit', minute: '2-digit'
+                        }) : "N/A"}
+                      </TableCell>
+                      
+                      <TableCell className="text-right pr-6">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-slate-100 rounded-full">
+                              <MoreVertical className="h-4 w-4 text-slate-400" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="rounded-xl w-44 shadow-xl border-slate-100">
+                            <DropdownMenuItem className="gap-2 cursor-pointer py-2 text-slate-600">
+                              <Eye className="h-4 w-4" /> View Details
+                            </DropdownMenuItem>
+                            
+                            {order.status !== "CANCELLED" && order.status !== "DELIVERED" && (
+                              <DropdownMenuItem 
+                                onClick={() => handleCancelOrder(order.id)}
+                                className="gap-2 text-red-600 cursor-pointer py-2 focus:bg-red-50 focus:text-red-700 font-medium"
+                                disabled={actionLoading === order.id}
+                              >
+                                {actionLoading === order.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <XCircle className="h-4 w-4" />
+                                )}
+                                Cancel Order
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

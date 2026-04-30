@@ -34,7 +34,6 @@ import {
   UserCheck
 } from "lucide-react";
 
-// ✅ Type Definitions (Any সরানো হয়েছে)
 type UserRole = "CUSTOMER" | "PROVIDER" | "ADMIN";
 type UserStatus = "ACTIVE" | "PENDING" | "APPROVED";
 
@@ -60,7 +59,6 @@ export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  // ✅ ইমেজ ইউআরএল হ্যান্ডলার
   const getImageUrl = (imagePath: string | undefined): string | undefined => {
     if (!imagePath) return undefined;
     if (imagePath.startsWith("http")) return imagePath;
@@ -95,7 +93,7 @@ export default function AdminUsersPage() {
     fetchUsers();
   }, []);
 
-  // ✅ Status Toggle with proper Types
+  //  Status Toggle with proper Types
   const toggleUserStatus = async (userId: string, currentStatus: UserStatus) => {
     const newStatus: UserStatus = currentStatus === "ACTIVE" ? "PENDING" : "ACTIVE";
     

@@ -3,8 +3,8 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
+        protocol: "https",
+        hostname: "images.unsplash.com",
       },
       {
         protocol: "https",
@@ -12,29 +12,34 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "via.placeholder.com", 
+        hostname: "via.placeholder.com",
       },
       {
         protocol: "https",
         hostname: "placehold.com",
       },
       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '5000',
-        pathname: '/uploads/**',
+        protocol: "http",
+        hostname: "localhost",
+        port: "5000",
+        pathname: "/uploads/**",
       },
     ],
   },
-  
-  // async rewrites() {
-  //   return [
-  //     {
-  //       source: '/api/:path*',
-  //       destination: 'https://foodhub-backend-seven.vercel.app/api/:path*', 
-  //     },
-  //   ];
-  // },
+
+ async rewrites() {
+    return [
+      // {
+      //   source: "/api/auth/:path*",
+      //   destination: "https://foodhub-backend-seven.vercel.app/api/auth/:path*",
+      // },   
+      {
+        source: "/api/:path*",
+        destination: "https://foodhub-backend-seven.vercel.app/api/:path*",
+      },
+    ];
+  },
+
 };
 
 module.exports = nextConfig;

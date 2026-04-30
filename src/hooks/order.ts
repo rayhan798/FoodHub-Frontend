@@ -1,41 +1,46 @@
-"use server";
-
 import { cookies } from "next/headers";
-import { revalidateTag } from "next/cache";
 import { env } from "@/env";
 
-/**
- * সার্ভার অ্যাকশন যা ব্রাউজার থেকে সরাসরি কল করা যাবে
- */
-export async function createOrderAction(orderData: { 
-  mealId: string; 
-  quantity: number; 
-  address: string 
+export async function createOrderAction(orderData: {
+  mealId: string;
+  quantity: number;
+  address: string;
 }) {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get("accessToken")?.value; // আপনার কুকি নাম অনুযায়ী
+
+    const cookieHeader = cookieStore
+      .getAll()
+      .map((c) => `${c.name}=${c.value}`)
+      .join("; ");
 
     const res = await fetch(`${env.API_URL}/orders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Cookie": cookieStore.toString(), // কুকি পাস করা হচ্ছে অথেন্টিকেশনের জন্য
+        Cookie: cookieHeader,
       },
       body: JSON.stringify(orderData),
+      cache: "no-store",
     });
 
     const result = await res.json();
 
     if (!res.ok) {
-      return { error: result.message || "Failed to create order", success: false };
+      return {
+        success: false,
+        error: result.message || "Failed",
+      };
     }
 
-    // ক্যাশ রিভ্যালিডেট করা
-    revalidateTag("orders", "default");
-    
-    return { data: result.data, success: true };
+    return {
+      success: true,
+      data: result.data,
+    };
   } catch (err: any) {
-    return { error: err.message || "Connection failed", success: false };
+    return {
+      success: false,
+      error: err.message,
+    };
   }
 }

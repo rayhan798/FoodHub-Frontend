@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, ChangeEvent } from "react";
-import { env } from "@/env";
 import { toast } from "sonner";
 
 /* ================= TYPES ================= */
@@ -24,7 +23,7 @@ interface ApiResponse<T> {
   data: T;
 }
 
-/* ✅ Image Compression Helper */
+/* Image Compression Helper  */
 const compressImage = (file: File): Promise<File | Blob> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -95,17 +94,16 @@ export const useMenuManager = () => {
     image: null as File | null 
   });
 
-  // const baseUrl = env.NEXT_PUBLIC_API_URL.replace('/api', '');
-  const baseUrl = env.NEXT_PUBLIC_API_URL.replace(/\/api$/, '').replace(/\/+$/, '');
+  const API_BASE = "/api/meals";
 
   /* =====================================================
-      ✅ FETCH MENU 
+       FETCH MENU 
   ===================================================== */
   const fetchMenu = async () => {
     try {
       setLoading(true);
       setFetchError(null);
-      const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/meals/getMeals`, {
+      const res = await fetch(`${API_BASE}/getMeals`, {
         method: "GET",
         credentials: "include", 
       });
@@ -151,7 +149,7 @@ export const useMenuManager = () => {
   };
 
   /* =====================================================
-      ✅ SAVE / UPDATE MEAL (With Approved Status Check)
+       SAVE / UPDATE MEAL 
   ===================================================== */
   const handleSave = async () => {
     if (!newItem.name.trim()) return toast.error("Meal name is required");
@@ -172,8 +170,8 @@ export const useMenuManager = () => {
       if (newItem.image) formData.append("image", newItem.image);
 
       const url = editingItem 
-        ? `${env.NEXT_PUBLIC_API_URL}/meals/${editingItem.id}` 
-        : `${env.NEXT_PUBLIC_API_URL}/meals`;
+        ? `${API_BASE}/${editingItem.id}` 
+        : API_BASE;
       
       const res = await fetch(url, {
         method: editingItem ? "PATCH" : "POST",
@@ -184,15 +182,13 @@ export const useMenuManager = () => {
       const result = await res.json();
       
       if (!res.ok) {
-        /* ✅ এখানে ব্যাকএন্ডের "Provider not approved by admin" মেসেজটি ধরা পড়বে */
         throw new Error(result.message || "Failed to save meal");
       }
 
-      toast.success(editingItem ? "Meal updated!" : "Meal added!", { id: toastId });
+      toast.success(editingItem ? "Meal updated! ✅" : "Meal added! 🍳", { id: toastId });
       closeModal();
       fetchMenu(); 
     } catch (error: any) {
-      /* ✅ ইউজারকে অ্যালার্ট মেসেজ দেখাবে */
       toast.error(error.message || "Something went wrong", { id: toastId });
     } finally {
       setIsSubmitting(false);
@@ -219,7 +215,7 @@ export const useMenuManager = () => {
   };
 
   /* =====================================================
-      ✅ TOGGLE STATUS
+       TOGGLE STATUS
   ===================================================== */
   const toggleStatus = async (id: string, currentStatus: string) => {
     if (updatingId) return;
@@ -227,7 +223,7 @@ export const useMenuManager = () => {
     const newStatus = currentStatus === "AVAILABLE" ? "OUT_OF_STOCK" : "AVAILABLE";
     
     try {
-      const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/meals/${id}`, {
+      const res = await fetch(`${API_BASE}/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -249,14 +245,14 @@ export const useMenuManager = () => {
   };
 
   /* =====================================================
-      ✅ DELETE MEAL
+       DELETE MEAL
   ===================================================== */
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this meal?")) return;
 
     const toastId = toast.loading("Deleting...");
     try {
-      const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/meals/${id}`, {
+      const res = await fetch(`${API_BASE}/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -265,15 +261,15 @@ export const useMenuManager = () => {
       if (!res.ok) throw new Error(result.message || "Delete failed");
       
       setMenuItems(prev => prev.filter(item => item.id !== id));
-      toast.success("Meal deleted successfully", { id: toastId });
+      toast.success("Meal deleted successfully 🗑️", { id: toastId });
     } catch (error: any) {
       toast.error(error.message, { id: toastId });
     }
   };
 
-  /* =====================================================
-      ✅ FILTERED ITEMS
-  ===================================================== */
+  /* ====================================================
+       FILTERED ITEMS
+  ==================================================== */
   const filteredItems = useMemo(() => {
     return menuItems.filter((item) => {
       const matchSearch = (item.name || "").toLowerCase().includes(search.toLowerCase());
@@ -282,10 +278,12 @@ export const useMenuManager = () => {
     });
   }, [menuItems, search, filter]);
 
+  const baseUrl = "https://foodhub-backend-seven.vercel.app";
+
   return {
     menuItems, loading, fetchError, search, setSearch, filter, setFilter,
     isModalOpen, setIsModalOpen, isSubmitting, updatingId, editingItem,
-    newItem, setNewItem, baseUrl, fetchMenu, handleImageChange, handleSave,
-    openEditModal, closeModal, toggleStatus, handleDelete, filteredItems
+    newItem, setNewItem, fetchMenu, handleImageChange, handleSave,
+    openEditModal, closeModal, toggleStatus, handleDelete, baseUrl, filteredItems
   };
 };

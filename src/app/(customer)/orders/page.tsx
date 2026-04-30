@@ -5,13 +5,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default async function OrdersPage() {
-  // ১. সার্ভিস থেকে ডাটা ফেচ করা
-  // ✅ সার্ভিস এখন options গ্রহণ করতে পারে, তাই টাইপস্ক্রিপ্ট আর এরর দেবে না
   const { data: orders, error } = await orderService.getOrders({
     cache: "no-store", 
   });
 
-  // ২. এরর হ্যান্ডলিং
   if (error) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
@@ -24,7 +21,6 @@ export default async function OrdersPage() {
     );
   }
 
-  // ৩. ডাটা না থাকলে হ্যান্ডলিং
   if (!orders || orders.length === 0) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
@@ -40,7 +36,6 @@ export default async function OrdersPage() {
     );
   }
 
-  // ৪. সাকসেস স্টেট
   return (
     <div className="container mx-auto px-4 py-10">
       <h1 className="text-3xl font-bold mb-8">My Orders</h1>

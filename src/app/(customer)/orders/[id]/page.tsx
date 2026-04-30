@@ -3,7 +3,6 @@ import OrderDetails, { OrderDetail, OrderItem } from "@/components/customer/Orde
 import SuccessModal from "@/components/customer/SuccessModal";
 import { notFound } from "next/navigation";
 
-// ✅ 'any' এড়ানোর জন্য ব্যাকএন্ড ডাটার টাইপ ডিফাইন করা
 interface RawOrderItem {
   id?: string;
   price?: number | string;
@@ -23,18 +22,15 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
   
   if (error || !order) notFound();
 
-  // ১. প্রাইস ক্যালকুলেশন
   const grandTotal = Number(order.totalPrice || order.total || 0);
   const deliveryFee = 5; 
   const subtotal = grandTotal - deliveryFee;
 
-  // ২. অর্ডার ডিটেইলস অবজেক্ট তৈরি
   const orderDetail: OrderDetail = {
     id: order.id,
     status: order.status,
     date: order.createdAt || order.date || new Date().toISOString(),
     
-    // ✅ 'any' এর পরিবর্তে 'RawOrderItem' ব্যবহার করে টাইপ সেফ করা হয়েছে
     items: (order.orderItems || []).map((item: RawOrderItem, index: number): OrderItem => ({
       id: item.id || String(index),
       name: item.meal?.name || "Delicious Meal",

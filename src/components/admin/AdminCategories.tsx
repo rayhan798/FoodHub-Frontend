@@ -33,8 +33,8 @@ import {
 import { Plus, Edit2, Trash2, Search, Utensils, Hash, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-// আপনার এক্সপ্রেস ব্যাকএন্ডের ইউআরএল এখানে দিন
-const API_BASE_URL = "http://localhost:5000/api/categories"; 
+// আপনার এক্সপ্রেস ব্যাকএন্ডের ইউআরএল এখানে দিন 
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/categories`;
 
 interface Category {
   id: string;

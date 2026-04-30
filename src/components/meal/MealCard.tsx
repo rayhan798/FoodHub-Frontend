@@ -21,21 +21,17 @@ interface MealCardProps {
 const MealCard = ({ meal }: MealCardProps) => {
   if (!meal) return null;
 
-  // ✅ ইমেজ পাথ ফিক্সিং লজিক
   const baseUrl = env.NEXT_PUBLIC_API_URL.replace(/\/api$/, "").replace(/\/$/, "");
   
   const getFinalSrc = () => {
     if (!meal.imageUrl) return "/placeholder-food.jpg";
 
-    // যদি এটি ক্লাউডিনারি বা অন্য কোনো পূর্ণাঙ্গ URL হয় (http দিয়ে শুরু হয়)
     if (meal.imageUrl.startsWith("http")) {
       return meal.imageUrl;
     }
 
-    // লোকাল স্টোরেজ পাথ (উইন্ডোজ ব্যাকস্ল্যাশ ক্লিন করা)
     const formattedPath = meal.imageUrl.replace(/\\/g, "/");
-    
-    // যদি পাথের শুরুতে স্ল্যাশ না থাকে তবে যোগ করে দেওয়া
+
     const cleanPath = formattedPath.startsWith("/") ? formattedPath : `/${formattedPath}`;
     
     return `${baseUrl}${cleanPath}`;
@@ -43,7 +39,6 @@ const MealCard = ({ meal }: MealCardProps) => {
 
   const finalSrc = getFinalSrc();
 
-  // ✅ Add to Cart Function
   const handleAddToCart = () => {
     try {
       const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");

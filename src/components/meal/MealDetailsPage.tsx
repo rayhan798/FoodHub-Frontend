@@ -19,6 +19,9 @@ export default function MealDetailsPage({ id }: MealDetailsProps) {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
 
+  /* --- BDT Symbol --- */
+  const BDT = "৳";
+
   const fetchMealDetails = useCallback(async () => {
     if (!id || id === "undefined") return;
     try {
@@ -40,7 +43,6 @@ export default function MealDetailsPage({ id }: MealDetailsProps) {
     fetchMealDetails();
   }, [fetchMealDetails]);
 
-// ✅ ডাইনামিক ইমেজ ইউআরএল জেনারেটর (Fixed for Cloudinary)
  const baseUrl = env.NEXT_PUBLIC_API_URL.replace(/\/api$/, "").replace(/\/$/, "");
  
  const finalSrc = meal?.imageUrl 
@@ -49,37 +51,29 @@ export default function MealDetailsPage({ id }: MealDetailsProps) {
        : `${baseUrl}/${meal.imageUrl.replace(/\\/g, "/").replace(/^\//, "")}`)
    : "/placeholder-food.jpg";
 
- // ✅ Add to Cart Logic (Fixed Image Issue)
  const handleAddToCart = () => {
    if (!meal) return;
 
    try {
-     // ১. বর্তমান কার্ট রিড করা
      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
 
-     // ২. অলরেডি কার্টে আছে কি না চেক করা
      const existingItemIndex = cart.findIndex((item: any) => item.id === meal.id);
 
      if (existingItemIndex > -1) {
-       // ৩. থাকলে শুধুমাত্র কুয়ান্টিটি যোগ করা
        cart[existingItemIndex].quantity += quantity;
      } else {
-       // ৪. না থাকলে নতুন অবজেক্ট হিসেবে পুশ করা
        cart.push({
          id: meal.id,
          name: meal.name,
          price: meal.price,
-         // ✅ ফিক্স: এখানে dynamic finalSrc সেভ করা হয়েছে যা Cloudinary ও Local দুটোই চেনে
          image: finalSrc, 
          providerId: meal.providerId,
          quantity: quantity,
        });
      }
 
-     // ৫. লোকাল স্টোরেজে আপডেট করা
      localStorage.setItem("cart", JSON.stringify(cart));
      
-     // ৬. সাকসেস মেসেজ এবং ইভেন্ট ফায়ার
      toast.success(`${meal.name} added to cart! 🛒`);
      window.dispatchEvent(new Event("cart-updated"));
 
@@ -153,7 +147,7 @@ export default function MealDetailsPage({ id }: MealDetailsProps) {
           </div>
 
           <div className="text-4xl font-black text-orange-600">
-            ${(Number(meal.price || 0) * quantity).toFixed(2)}
+            {BDT}{(Number(meal.price || 0) * quantity).toLocaleString()}
           </div>
 
           <p className="text-slate-600 leading-relaxed text-lg italic">

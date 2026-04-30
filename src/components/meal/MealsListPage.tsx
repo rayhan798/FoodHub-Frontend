@@ -25,7 +25,9 @@ interface ExtendedMeal extends Meal {
   createdAt?: string;
 }
 
-// ✅ এখানে ক্যাটাগরিগুলো বাড়িয়ে দেওয়া হয়েছে
+// BDT Symbol constant
+const BDT = "৳";
+
 const SIDEBAR_CATEGORIES = [
   "Burger",
   "Pizza",
@@ -52,14 +54,12 @@ function BrowseMealsContent() {
   const searchParams = useSearchParams();
   const categoryFromUrl = searchParams.get("category");
 
-  // ১. ইউআরএল-এ ক্যাটাগরি থাকলে সেটি সিলেক্ট করা
   useEffect(() => {
     if (categoryFromUrl) {
       setSelectedCategories([categoryFromUrl]);
     }
   }, [categoryFromUrl]);
 
-  // ২. API থেকে ডাটা ফেচ করা
   useEffect(() => {
     const fetchMeals = async () => {
       try {
@@ -81,7 +81,6 @@ function BrowseMealsContent() {
     fetchMeals();
   }, []);
 
-  // ৩. ফিল্টারিং লজিক
   const filteredMeals = useMemo(() => {
     return allMeals
       .filter((meal: ExtendedMeal) => {
@@ -135,7 +134,6 @@ function BrowseMealsContent() {
         <aside className="w-full md:w-64 space-y-8">
           <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
             <h3 className="text-lg font-bold mb-4 text-slate-800">Categories</h3>
-            {/* স্ক্রলযোগ্য করার জন্য max-h যোগ করা হয়েছে যদি ক্যাটাগরি অনেক বেশি হয় */}
             <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
               {SIDEBAR_CATEGORIES.map((cat) => (
                 <div key={cat} className="flex items-center space-x-2">
@@ -168,9 +166,9 @@ function BrowseMealsContent() {
               className="mb-6"
             />
             <div className="flex justify-between items-center text-sm">
-              <span className="bg-slate-100 px-2 py-1 rounded text-slate-600 font-mono">${priceRange[0]}</span>
+              <span className="bg-slate-100 px-2 py-1 rounded text-slate-600 font-mono">{BDT}{priceRange[0]}</span>
               <span className="text-slate-400">to</span>
-              <span className="bg-orange-50 px-2 py-1 rounded text-orange-600 font-bold font-mono">${priceRange[1]}</span>
+              <span className="bg-orange-50 px-2 py-1 rounded text-orange-600 font-bold font-mono">{BDT}{priceRange[1]}</span>
             </div>
           </div>
 

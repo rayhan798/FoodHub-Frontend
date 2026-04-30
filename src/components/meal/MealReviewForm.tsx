@@ -27,10 +27,9 @@ export default function MealReviewForm({ mealId, onSuccess }: ReviewFormProps) {
 
     setIsSubmitting(true);
     try {
-      // ✅ সঠিক পেলোড যা আপনার ব্যাকএন্ডের Zod স্কিমার সাথে মিলবে
       const payload = {
         mealId: mealId,
-        rating: rating, // কন্ট্রোলারে Number(rating) করা আছে, তাই সমস্যা নেই
+        rating: rating,
         comment: comment.trim() || "",
       };
 
@@ -41,13 +40,12 @@ export default function MealReviewForm({ mealId, onSuccess }: ReviewFormProps) {
         },
         credentials: "include", 
         body: JSON.stringify(payload),
-        cache: 'no-store', // ✅ ক্যাশ এড়ানোর জন্য
+        cache: 'no-store', 
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        // Zod বা সার্ভার এরর হ্যান্ডলিং
         if (result.errors && Array.isArray(result.errors)) {
           const errorMsg = result.errors.map((err: any) => err.message).join(", ");
           throw new Error(errorMsg);
@@ -57,13 +55,10 @@ export default function MealReviewForm({ mealId, onSuccess }: ReviewFormProps) {
 
       toast.success("Review submitted successfully!");
       
-      // ১. ফর্ম রিসেট করা
       setRating(0);
       setComment("");
 
-      // ২. প্যারেন্ট কম্পোনেন্টকে জানানো যাতে সে ডাটা রি-ফেচ করে
       if (onSuccess) {
-        // সামান্য ডিলে দিয়ে কল করা ভালো যাতে DB আপডেট হওয়ার সময় পায়
         setTimeout(() => {
           onSuccess();
         }, 500);
@@ -82,7 +77,6 @@ export default function MealReviewForm({ mealId, onSuccess }: ReviewFormProps) {
       <h3 className="text-lg font-bold text-slate-900 mb-4">How was the meal?</h3>
       
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* স্টার রেটিং */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5">
             {[1, 2, 3, 4, 5].map((star) => (
@@ -112,7 +106,6 @@ export default function MealReviewForm({ mealId, onSuccess }: ReviewFormProps) {
           )}
         </div>
 
-        {/* কমেন্ট বক্স */}
         <div className="relative">
           <textarea
             value={comment}
@@ -130,7 +123,6 @@ export default function MealReviewForm({ mealId, onSuccess }: ReviewFormProps) {
           )}
         </div>
 
-        {/* সাবমিট বাটন */}
         <button
           type="submit"
           disabled={isSubmitting || !user || rating === 0}

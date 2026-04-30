@@ -14,20 +14,16 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // এখানে আপনি Sentry বা LogRocket এর মতো কোনো সার্ভিস ইউজ করলে এরর পাঠাতে পারেন
     console.error("Application Error:", error);
   }, [error]);
 
   const handleReset = () => {
-    // Next.js reset function কল করা হচ্ছে
-    // যদি এটা কাজ না করে, ইউজার চাইলে পেজ রিফ্রেশ করতে পারেন
     reset();
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 px-4 overflow-hidden relative">
       
-      {/* Background Decorative Circles */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none -z-10 opacity-30">
         <div className="absolute top-1/4 left-10 w-24 h-24 bg-orange-200 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-10 w-32 h-32 bg-blue-200 rounded-full blur-3xl" />
@@ -48,7 +44,6 @@ export default function Error({
           <AlertTriangle className="h-16 w-16 text-orange-600" />
         </div>
         
-        {/* Floating Emojis */}
         <motion.div
           animate={{ y: [0, -10, 0] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -78,7 +73,6 @@ export default function Error({
           Don&apos;t worry, it&apos;s likely a temporary glitch. Our chefs are working hard to fix it! 👨‍🍳
         </p>
         
-        {/* Optional: Error ID (Digest) for tracking */}
         {error.digest && (
           <p className="text-[10px] text-slate-300 font-mono mt-2 uppercase tracking-widest">
             Error ID: {error.digest}
@@ -112,7 +106,6 @@ export default function Error({
         </Button>
       </motion.div>
 
-      {/* Developer Context (Only visible during local development) */}
       {process.env.NODE_ENV === 'development' && (
         <div className="mt-12 p-4 bg-red-50 border border-red-100 rounded-lg max-w-2xl overflow-auto">
           <p className="text-red-600 text-xs font-mono">{error.message}</p>

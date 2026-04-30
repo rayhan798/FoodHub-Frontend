@@ -17,7 +17,7 @@ export default function SuccessModal() {
 
   const handleClose = () => {
     setIsOpen(false);
-    router.push("/orders"); // পপ-আপ বন্ধ করলে সব অর্ডারের লিস্টে নিয়ে যাবে
+    router.push("/orders"); 
   };
 
   return (

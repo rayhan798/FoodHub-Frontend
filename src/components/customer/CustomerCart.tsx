@@ -10,6 +10,9 @@ import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "react-hot-toast";
 
+/* --- Currency Symbol Configuration --- */
+const BDT = "৳";
+
 interface CartItem {
   id: string;
   name: string;
@@ -22,7 +25,7 @@ interface CartItem {
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter(); // নেভিগেশনের জন্য ইনিশিয়ালাইজ
+  const router = useRouter(); 
 
   useEffect(() => {
     const savedCart = localStorage.getItem("cart");
@@ -51,27 +54,18 @@ export default function CartPage() {
     toast.success("Item removed from cart");
   };
 
-  // ✅ ডাইনামিক চেকআউট হ্যান্ডলার
   const handleCheckout = () => {
     if (cartItems.length === 0) {
       toast.error("Your cart is empty!");
       return;
     }
 
-    // এখানে আপনি চাইলে চেক করতে পারেন ইউজার লগইন করা কিনা
-    // const token = localStorage.getItem("token");
-    // if (!token) {
-    //   toast.error("Please login to proceed");
-    //   router.push("/login?redirect=/checkout");
-    //   return;
-    // }
-
     toast.loading("Preparing your order...");
-    router.push("/checkout"); // সরাসরি চেকআউট পেজে নিয়ে যাবে
+    router.push("/checkout"); 
   };
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  const deliveryFee = cartItems.length > 0 ? 5.00 : 0;
+  const deliveryFee = cartItems.length > 0 ? 50.00 : 0; // Adjusted for BDT context
   const total = subtotal + deliveryFee;
 
   if (loading) return <div className="min-h-screen" />;
@@ -126,7 +120,7 @@ export default function CartPage() {
 
                     <div className="flex justify-between items-end mt-4">
                       <div className="font-extrabold text-xl text-slate-900">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {BDT}{(item.price * item.quantity).toLocaleString()}
                       </div>
 
                       <div className="flex items-center border border-slate-200 rounded-xl px-2 py-1 bg-white shadow-sm">
@@ -155,20 +149,19 @@ export default function CartPage() {
               <div className="space-y-4">
                 <div className="flex justify-between text-slate-500 font-medium">
                   <span>Subtotal</span>
-                  <span className="text-slate-900">${subtotal.toFixed(2)}</span>
+                  <span className="text-slate-900">{BDT}{subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-slate-500 font-medium">
                   <span>Delivery Fee</span>
-                  <span className="text-green-600">${deliveryFee.toFixed(2)}</span>
+                  <span className="text-green-600">{BDT}{deliveryFee.toLocaleString()}</span>
                 </div>
                 <Separator className="bg-slate-100" />
                 <div className="flex justify-between items-center pt-2">
                   <span className="text-lg font-bold text-slate-900">Grand Total</span>
-                  <span className="text-3xl font-black text-orange-600">${total.toFixed(2)}</span>
+                  <span className="text-3xl font-black text-orange-600">{BDT}{total.toLocaleString()}</span>
                 </div>
               </div>
 
-              {/* ✅ এই বাটনে এখন হ্যান্ডলার কাজ করবে */}
               <Button 
                 onClick={handleCheckout}
                 className="w-full bg-orange-600 hover:bg-orange-700 h-14 rounded-2xl text-lg font-bold shadow-lg shadow-orange-100 transition-all active:scale-[0.98]"

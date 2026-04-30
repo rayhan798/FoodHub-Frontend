@@ -43,7 +43,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-// কাস্টম হুক ইমপোর্ট
 import { useMenuManager } from "../../hooks/useProviderMenu";
 
 const CATEGORIES = [
@@ -207,7 +206,7 @@ export default function ProviderMenu() {
                   </select>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="price">Price ($) *</Label>
+                  <Label htmlFor="price">Price (৳) *</Label>
                   <Input
                     id="price"
                     type="number"
@@ -323,7 +322,6 @@ export default function ProviderMenu() {
                         <div className="h-10 w-10 rounded-lg bg-orange-100 flex items-center justify-center overflow-hidden border border-orange-50">
                           {item.imageUrl ? (
                             <img
-                              // ✅ ক্লাউডিনারি ফিক্সড লজিক
                               src={
                                 item.imageUrl.startsWith("http")
                                   ? item.imageUrl
@@ -331,9 +329,8 @@ export default function ProviderMenu() {
                               }
                               alt={item.name}
                               className="h-full w-full object-cover"
-                              // ✅ ইমেজ এরর হ্যান্ডলিং: যদি ইমেজ লিঙ্ক কাজ না করে তবে প্লেসহোল্ডার দেখাবে
                               onError={(e: any) => {
-                                e.currentTarget.onerror = null; // ইনফিনিট লুপ বন্ধ করতে
+                                e.currentTarget.onerror = null;
                                 e.currentTarget.src =
                                   "https://placehold.co/100x100?text=Food";
                               }}
@@ -363,7 +360,7 @@ export default function ProviderMenu() {
                       </Badge>
                     </TableCell>
                     <TableCell className="font-bold text-slate-700">
-                      ${Number(item.price || 0).toFixed(2)}
+                      ৳{Number(item.price || 0).toFixed(2)}
                     </TableCell>
                     <TableCell>
                       <button

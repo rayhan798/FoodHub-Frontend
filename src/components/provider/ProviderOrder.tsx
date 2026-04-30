@@ -1,22 +1,26 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Search, Loader2, RefreshCcw } from "lucide-react";
+import { Eye, Loader2, RefreshCcw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation"; 
-import { updateOrderStatusAction } from "@/hooks/orderStatus";
+import { useRouter } from "next/navigation";
 
-// Type Definitions
-type OrderStatus = "PENDING" | "PREPARING" | "READY" | "DELIVERED" | "CANCELLED";
+// ================= TYPES =================
+type OrderStatus =
+  | "PENDING"
+  | "PREPARING"
+  | "READY"
+  | "DELIVERED"
+  | "CANCELLED";
 
 interface ProviderOrder {
   id: string;
@@ -27,221 +31,233 @@ interface ProviderOrder {
   createdAt: string;
 }
 
-interface ApiOrder {
-  id: string;
-  status: OrderStatus;
-  totalPrice: number;
-  createdAt: string;
-  customer?: { name: string };
-  orderItems?: Array<{ quantity: number; meal?: { name: string } }>;
-}
-
+// ================= PAGE =================
 export default function ProviderOrdersPage() {
   const [orders, setOrders] = useState<ProviderOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const router = useRouter(); 
 
-  // 1. Function to get access token from cookies
-  const getAccessToken = useCallback(() => {
-    if (typeof document === "undefined") return null;
-    const name = "accessToken=";
-    const decodedCookie = decodeURIComponent(document.cookie);
-    const ca = decodedCookie.split(';');
-    for (let i = 0; i < ca.length; i++) {
-      const c = ca[i].trim();
-      if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
+  const router = useRouter();
+  
+  // API URL handling: rewriting to relative path for Next.js rewrites/proxy support
+  const API_BASE = "/api"; 
+
+  // ================= STATUS COLORS =================
+  const getStatusStyle = (status: OrderStatus) => {
+    switch (status) {
+      case "PENDING":
+        return "bg-yellow-100 text-yellow-700";
+      case "PREPARING":
+        return "bg-blue-100 text-blue-700";
+      case "READY":
+        return "bg-purple-100 text-purple-700";
+      case "DELIVERED":
+        return "bg-green-100 text-green-700";
+      case "CANCELLED":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-700";
     }
-    return null;
-  }, []);
+  };
 
+  // ================= FETCH ORDERS =================
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-      const token = getAccessToken();
-
-      const response = await fetch(`${apiUrl}/orders`, {
+      const res = await fetch(`${API_BASE}/orders`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
         credentials: "include", 
       });
 
-      const result = await response.json();
+      if (res.status === 401) {
+        toast.error("Session expired. Please login again.");
+        router.push("/login");
+        return;
+      }
 
-      if (result.success && result.data) {
-        const mappedOrders = result.data.map((order: ApiOrder) => ({
+      const data = await res.json();
+
+      if (data.success) {
+        const mapped = data.data.map((order: any) => ({
           id: order.id,
-          customer: order.customer?.name || "Guest User",
-          items: order.orderItems?.map((item) => `${item.quantity}x ${item.meal?.name}`).join(", ") || "No items",
+          customer: order.customer?.name || "Guest",
+          items:
+            order.orderItems
+              ?.map((i: any) => `${i.quantity}x ${i.meal?.name}`)
+              .join(", ") || "No items",
           total: order.totalPrice,
           status: order.status,
-          createdAt: new Date(order.createdAt).toLocaleString('en-GB'),
+          createdAt: new Date(order.createdAt).toLocaleString(),
         }));
-        setOrders(mappedOrders);
-      } else {
-        setOrders([]);
-        if (response.status === 401) {
-          toast.error("Session expired! Please login again.");
-          router.push("/login");
-        }
+        setOrders(mapped);
       }
     } catch (error) {
-      console.error("Fetch error:", error);
-      toast.error("Could not connect to the server.");
+      toast.error("Could not connect to the server");
     } finally {
       setLoading(false);
     }
-  }, [getAccessToken, router]);
+  }, [router]);
 
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
 
-  // 2. Status Update Handler
-  const handleStatusChange = async (orderId: string, newStatus: string) => {
-    const loadingToast = toast.loading("Updating order status...");
-    
+  // ================= STATUS UPDATE (FIXED ROUTE) =================
+  const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
+    const prevOrders = [...orders];
+
+    // Optimistic UI Update
+    setOrders((current) =>
+      current.map((order) =>
+        order.id === orderId ? { ...order, status: newStatus } : order
+      )
+    );
+
+    const toastId = toast.loading("Updating order status...");
+
     try {
-      const result = await updateOrderStatusAction(orderId, newStatus);
-      
-      if (result.success) {
-        setOrders((prev) => 
-          prev.map((order) => 
-            order.id === orderId 
-              ? { ...order, status: newStatus as OrderStatus } 
-              : order
-          )
-        );
-        toast.success("Status updated successfully!", { id: loadingToast });
-      } else {
-        const errorMsg = result.error || "Update failed";
-        if (errorMsg.toLowerCase().includes("unauthorized") || errorMsg.includes("session")) {
-          toast.error("Your session expired. Redirecting to login...", { id: loadingToast });
-          setTimeout(() => router.push("/login"), 2000);
-          return;
-        }
-        throw new Error(errorMsg);
+      const res = await fetch(`${API_BASE}/orders/${orderId}/status`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to update status");
       }
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Update failed!";
-      toast.error(errorMessage, { id: loadingToast });
+
+      toast.success(`Order is now ${newStatus.toLowerCase()}`, { id: toastId });
+    } catch (err: any) {
+      setOrders(prevOrders);
+      toast.error(err.message || "Update failed", { id: toastId });
     }
   };
 
-  const getStatusColor = (status: OrderStatus) => {
-    switch (status) {
-      case "PENDING": return "bg-amber-100 text-amber-700";
-      case "PREPARING": return "bg-blue-100 text-blue-700";
-      case "READY": return "bg-purple-100 text-purple-700";
-      case "DELIVERED": return "bg-green-100 text-green-700";
-      case "CANCELLED": return "bg-red-100 text-red-700";
-      default: return "bg-slate-100 text-slate-700";
-    }
-  };
-
-  const filteredOrders = orders.filter((order) => 
-    order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    order.customer.toLowerCase().includes(searchQuery.toLowerCase())
+  // ================= FILTER =================
+  const filtered = orders.filter(
+    (o) =>
+      o.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      o.customer.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
-      <div className="flex justify-between items-end">
+
+      {/* HEADER */}
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Order Management</h1>
-          <p className="text-slate-500">View and manage all orders from your kitchen.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Kitchen Orders</h1>
+          <p className="text-muted-foreground">Manage and track your kitchen's incoming orders</p>
         </div>
-        <Button onClick={fetchOrders} variant="outline" disabled={loading} className="rounded-xl flex gap-2">
+
+        <Button onClick={fetchOrders} disabled={loading} variant="outline" className="gap-2">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
           Refresh
         </Button>
       </div>
 
-      <Card className="rounded-2xl border-slate-100 shadow-sm overflow-hidden bg-white">
-        <CardHeader className="p-4 border-b border-slate-50">
-          <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input 
-              placeholder="Search by Order ID or Customer..." 
-              className="pl-10 rounded-xl border-slate-200" 
+      {/* SEARCH & TABLE CARD */}
+      <Card className="shadow-sm">
+        <CardHeader className="pb-3">
+          <div className="relative">
+            <Input
+              placeholder="Search by Order ID or Customer Name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-4 max-w-md"
             />
           </div>
         </CardHeader>
-        <CardContent className="p-0 pt-0">
-          {loading ? (
-            <div className="py-20 flex flex-col items-center justify-center">
-              <Loader2 className="h-10 w-10 animate-spin text-orange-600 mb-4" />
-              <p className="text-slate-500">Loading orders...</p>
+
+        <CardContent>
+          {loading && orders.length === 0 ? (
+            <div className="py-20 flex flex-col items-center justify-center text-muted-foreground">
+              <Loader2 className="h-8 w-8 animate-spin mb-2" />
+              <p>Loading your orders...</p>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="py-20 text-center text-muted-foreground">
+              No orders found matching your search.
             </div>
           ) : (
-            <Table>
-              <TableHeader className="bg-slate-50/50">
-                <TableRow>
-                  <TableHead className="pl-6">Order Info</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Total Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right pr-6">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredOrders.length > 0 ? (
-                  filteredOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="pl-6 py-4">
-                        <div className="font-bold text-slate-900">#{order.id.slice(-6).toUpperCase()}</div>
-                        <div className="text-[10px] text-slate-400 font-bold uppercase">{order.createdAt}</div>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader className="bg-slate-50/50">
+                  <TableRow>
+                    <TableHead className="font-bold">Order ID</TableHead>
+                    <TableHead className="font-bold">Customer</TableHead>
+                    <TableHead className="font-bold">Items</TableHead>
+                    <TableHead className="font-bold">Total</TableHead>
+                    <TableHead className="font-bold">Status</TableHead>
+                    <TableHead className="text-right font-bold">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+
+                <TableBody>
+                  {filtered.map((order) => (
+                    <TableRow key={order.id} className="hover:bg-slate-50/30 transition-colors">
+                      <TableCell className="font-medium text-blue-600">
+                        #{order.id.slice(-6).toUpperCase()}
                       </TableCell>
+                      <TableCell>{order.customer}</TableCell>
+                      <TableCell className="max-w-[200px] truncate" title={order.items}>
+                        {order.items}
+                      </TableCell>
+                      <TableCell className="font-semibold">
+                        ৳{order.total.toLocaleString()}
+                      </TableCell>
+
                       <TableCell>
-                        <div className="font-semibold text-slate-800">{order.customer}</div>
-                        <div className="text-xs text-slate-500 truncate max-w-[180px]">{order.items}</div>
-                      </TableCell>
-                      <TableCell className="font-bold text-slate-900">${order.total.toFixed(2)}</TableCell>
-                      <TableCell>
-                        <Select 
-                          defaultValue={order.status} 
-                          onValueChange={(val) => handleStatusChange(order.id, val)}
+                        <div
+                          className={`px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold w-fit ${getStatusStyle(
+                            order.status
+                          )}`}
                         >
-                          <SelectTrigger className={`w-[130px] h-8 rounded-full text-[11px] font-bold border-none ${getStatusColor(order.status)}`}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="rounded-xl shadow-xl">
-                            <SelectItem value="PENDING">Pending</SelectItem>
-                            <SelectItem value="PREPARING">Preparing</SelectItem>
-                            <SelectItem value="READY">Ready</SelectItem>
-                            <SelectItem value="DELIVERED">Delivered</SelectItem>
-                            <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          {order.status}
+                        </div>
                       </TableCell>
-                      <TableCell className="text-right pr-6">
-                        {/* Dynamic Action Button */}
-                        <Button 
-                          onClick={() => router.push(`/orders/${order.id}`)}
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-slate-400 hover:text-orange-600 rounded-full"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
+
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Select
+                            value={order.status}
+                            onValueChange={(val: OrderStatus) =>
+                              handleStatusChange(order.id, val)
+                            }
+                          >
+                            <SelectTrigger className="w-[120px] h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                              <SelectItem value="PENDING">Pending</SelectItem>
+                              <SelectItem value="PREPARING">Preparing</SelectItem>
+                              <SelectItem value="READY">Ready</SelectItem>
+                              <SelectItem value="DELIVERED">Delivered</SelectItem>
+                              <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() => router.push(`/orders/${order.id}`)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-20 text-slate-500">
-                      No orders found.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

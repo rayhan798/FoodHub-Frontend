@@ -12,6 +12,8 @@ import {
   Loader2,
   Settings,
   CircleOff,
+  Menu,
+  ChefHat, 
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -23,25 +25,19 @@ import {
 import { useAuth } from "@/features/auth/context";
 import { env } from "@/env";
 import { toast } from "react-hot-toast";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; 
+import ProviderSidebar from "./ProviderSidebar";
 
-/** * ✅ ইমেজ ইউআরএল জেনারেটর
- */
+
 const getImageUrl = (imagePath: string | undefined): string | undefined => {
   if (!imagePath) return undefined;
 
-  // ১. যদি পাথটি সরাসরি URL (http/https) হয় বা base64 ডাটা হয়
   if (imagePath.startsWith("http") || imagePath.startsWith("data:")) {
     return imagePath;
   }
 
-  // ২. আপনার API URL থেকে ট্রেইলিং স্ল্যাশ (/) এবং '/api' অংশটি ক্লিন করে নিন
   const baseUrl = env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "").replace(/\/$/, "");
 
-  /**
-   * ৩. লোকাল স্টোরেজ হ্যান্ডেল করা:
-   * যদি পাথে 'uploads/' থাকে, তবে সরাসরি baseUrl যোগ হবে।
-   * না থাকলে '/uploads/' সহ যোগ হবে।
-   */
   const cleanPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
   
   if (imagePath.startsWith("uploads/")) {
@@ -55,8 +51,6 @@ export default function ProviderHeader() {
   const { user, logout, isLoading } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  /** * ✅ ডিসপ্লে ইমেজ লজিক
-   */
   const displayImage = useMemo(() => {
     if (!user) return undefined;
 
@@ -74,9 +68,6 @@ export default function ProviderHeader() {
     return user.image;
   }, [user]);
 
-  /**
-   * ✅ লগআউট হ্যান্ডলার উইথ লোডিং স্টেট
-   */
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
@@ -90,9 +81,27 @@ export default function ProviderHeader() {
   };
 
   return (
-    <header className="h-16 border-b bg-white flex items-center justify-between px-8 sticky top-0 z-20 shadow-sm">
-      {/* বাম পাশ: শপ স্ট্যাটাস */}
-      <div className="flex items-center gap-4">
+    <header className="h-16 border-b bg-white flex items-center justify-between px-4 md:px-8 sticky top-0 z-20 shadow-sm">
+      <div className="flex items-center gap-2 md:gap-4">
+        <div className="lg:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                <Menu size={24} className="text-slate-600" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-64">
+              <ProviderSidebar />
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        <div className="flex lg:hidden items-center gap-2 mr-2">
+          <div className="h-8 w-8 bg-orange-600 rounded-lg flex items-center justify-center shadow-md">
+            <ChefHat size={18} className="text-white" />
+          </div>
+        </div>
+
         <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100">
           <span className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse"></span>
           <span className="text-xs font-bold uppercase tracking-wider">
@@ -101,8 +110,7 @@ export default function ProviderHeader() {
         </div>
       </div>
 
-      {/* ডান পাশ: টুলস */}
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-3 md:gap-5">
         <button 
           className="text-slate-500 hover:text-orange-600 transition-colors relative"
           onClick={() => toast.success("You have 3 new notifications")}
@@ -115,10 +123,9 @@ export default function ProviderHeader() {
 
         <div className="h-6 w-[1px] bg-slate-200"></div>
 
-        {/* প্রোভাইডার প্রোফাইল */}
         <DropdownMenu>
           <DropdownMenuTrigger
-            className="flex items-center gap-3 outline-none group"
+            className="flex items-center gap-2 md:gap-3 outline-none group"
             disabled={isLoading || isLoggingOut}
           >
             <div className="text-right hidden sm:block">
@@ -130,7 +137,6 @@ export default function ProviderHeader() {
               </p>
             </div>
 
-            {/* ইমেজ লজিক */}
             <div className="h-9 w-9 rounded-full bg-slate-100 border-2 border-orange-100 flex items-center justify-center text-orange-600 overflow-hidden relative shadow-sm">
               {isLoading || isLoggingOut ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -197,7 +203,6 @@ export default function ProviderHeader() {
 
             <DropdownMenuSeparator />
 
-            {/* Better Auth Logout with Loading State */}
             <DropdownMenuItem
               onClick={handleLogout}
               disabled={isLoggingOut}

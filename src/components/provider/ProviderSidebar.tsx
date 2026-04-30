@@ -11,13 +11,12 @@ import {
   ChefHat
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/features/auth/context"; // ১. useAuth ইম্পোর্ট করা হয়েছে
+import { useAuth } from "@/features/auth/context"; 
 
 export default function ProviderSidebar() {
   const pathname = usePathname();
-  const { user, logout } = useAuth(); // ২. user এবং logout ফাংশন নিয়ে আসা হয়েছে
+  const { user, logout } = useAuth();
 
-  // ৩. রুটস অ্যারেটি ফাংশনের ভেতরে নিয়ে আসা হয়েছে যাতে user.id অ্যাক্সেস করা যায়
   const providerRoutes = [
     {
       label: "Overview",
@@ -37,7 +36,6 @@ export default function ProviderSidebar() {
   {
     label: "Kitchen Profile",
     icon: Store,
-    // ডাইনামিক আইডি লিঙ্ক
     href: user?.id ? `/provider/profile/${user.id}` : "#",
  },
   ];
@@ -45,7 +43,6 @@ export default function ProviderSidebar() {
   return (
     <div className="flex flex-col h-full bg-white border-r shadow-sm w-64">
       <div className="px-6 py-8 flex-1">
-        {/* লোগো সেকশন */}
         <Link href="/provider/dashboard" className="flex items-center mb-10 pl-2">
           <div className="h-9 w-9 bg-orange-600 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-orange-200">
              <ChefHat className="text-white h-5 w-5" />
@@ -55,7 +52,6 @@ export default function ProviderSidebar() {
           </span>
         </Link>
 
-        {/* নেভিগেশন লিংকসমূহ */}
         <nav className="space-y-2">
           {providerRoutes.map((route) => (
             <Link
@@ -78,10 +74,9 @@ export default function ProviderSidebar() {
         </nav>
       </div>
 
-      {/* ৫. সাইন আউট সেকশন (Fixed with logout function) */}
       <div className="p-4 border-t">
         <button 
-          onClick={() => logout()} // Better Auth Logout কল করা হয়েছে
+          onClick={() => logout()} 
           className="flex items-center w-full p-3 text-sm font-medium text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all group"
         >
           <LogOut className="h-5 w-5 mr-3 text-slate-400 group-hover:text-red-600 transition-colors" />

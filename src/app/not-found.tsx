@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { UtensilsCrossed, ArrowLeft, Home } from "lucide-react";
-import { useRouter } from "next/navigation"; // window.history এর বদলে এটি ব্যবহার করা ভালো
+import { useRouter } from "next/navigation"; 
 
 export default function NotFound() {
   const router = useRouter();
@@ -86,7 +86,7 @@ export default function NotFound() {
         <Button
           variant="outline"
           size="lg"
-          onClick={() => router.back()} // useRouter.back() ব্যবহার করা নিরাপদ
+          onClick={() => router.back()} // useRouter.back() 
           className="rounded-2xl px-10 border-slate-200 hover:bg-slate-100 transition-all hover:scale-105 active:scale-95 h-12 flex items-center"
         >
           <ArrowLeft className="mr-2 h-5 w-5" /> Go Back

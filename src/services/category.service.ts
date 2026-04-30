@@ -3,10 +3,9 @@ import axios from "axios";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export const categoryService = {
-  // সব ক্যাটাগরি এবং তাদের আইটেম কাউন্ট নিয়ে আসা
   getAllCategories: async () => {
     const response = await axios.get(`${API_URL}/categories`);
-    return response.data; // এখানে আপনার DB থেকে { id, name, slug, itemCount, status } আসবে
+    return response.data; 
   },
 
   createCategory: async (data: any) => {

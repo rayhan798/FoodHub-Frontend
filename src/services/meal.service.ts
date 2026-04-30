@@ -1,6 +1,5 @@
 import { env } from "@/env";
 
-// ✅ NEXT_PUBLIC_API_URL ব্যবহার করা হয়েছে যা ক্লায়েন্ট ও সার্ভার উভয় জায়গায় কাজ করে
 const API_URL = env.NEXT_PUBLIC_API_URL || env.API_URL;
 
 interface ServiceOptions {
@@ -26,7 +25,6 @@ export interface Meal {
   status?: "AVAILABLE" | "OUT_OF_STOCK";
 }
 
-// সার্ভিস থেকে আসা রেসপন্স টাইপ
 interface ServiceResponse<T> {
   data: T | null;
   error: { message: string } | null;
@@ -104,7 +102,6 @@ export const mealService = {
 
       const headers: Record<string, string> = {};
 
-      // যদি ডাটা FormData না হয়, তবে JSON Content-Type সেট করি
       if (!(mealData instanceof FormData)) {
         headers["Content-Type"] = "application/json";
       }

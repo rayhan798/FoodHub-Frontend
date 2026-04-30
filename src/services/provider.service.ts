@@ -1,4 +1,3 @@
-// src/services/provider.service.ts
 export const providersService = {
   async getProviders(options?: RequestInit) {
     try {

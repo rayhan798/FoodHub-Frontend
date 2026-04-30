@@ -80,7 +80,6 @@ const Categories = () => {
     );
   }
 
-  // ৫টি কার্ডের ২ লাইন করার জন্য ১০টি ক্যাটাগরি ফিক্সড লজিক
   const displayCategories = categories.length > 0 
     ? categories.slice(0, 10) 
     : [
@@ -105,11 +104,6 @@ const Categories = () => {
         <div className="h-1.5 w-24 bg-orange-500 mt-4 rounded-full"></div>
       </div>
 
-      {/* মেইন ফিক্স: 
-          - lg:grid-cols-5 (ডেক্সটপে ৫টি কলাম)
-          - md:p-10 (কার্ডগুলো বড় দেখানোর জন্য প্যাডিং বাড়ানো হয়েছে)
-          - gap-8 (কার্ডগুলোর মাঝে সুন্দর দূরত্ব)
-      */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
         {displayCategories.map((cat) => (
           <Card
@@ -118,17 +112,14 @@ const Categories = () => {
             onClick={() => handleCategoryClick(cat.name)}
           >
             <CardContent className="p-10 flex flex-col items-center justify-center">
-              {/* আইকন সাইজ বড় করা হয়েছে (text-6xl) */}
               <div className="text-6xl mb-6 group-hover:scale-125 transition-transform duration-500 ease-out">
                 {getIcon(cat.name)}
               </div>
               
-              {/* টেক্সট সাইজ বড় করা হয়েছে (text-xl) */}
               <p className="font-bold text-xl text-slate-700 group-hover:text-orange-600 transition-colors text-center">
                 {cat.name}
               </p>
-              
-              {/* নিচের ছোট ডেকোরেশন লাইন */}
+
               <div className="w-0 group-hover:w-10 h-1 bg-orange-500 mt-2 transition-all duration-500 rounded-full"></div>
             </CardContent>
           </Card>

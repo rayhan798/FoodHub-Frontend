@@ -8,36 +8,24 @@ interface FeaturedMealsProps {
 }
 
 const FeaturedMeals = async ({ limit = 3 }: FeaturedMealsProps) => {
-  /**
-   * ১. এপিআই ফেচিং:
-   * 'isFeatured' কে অনেক সময় এপিআই প্যারামিটারে স্ট্রিং হিসেবে চায়, 
-   * কিন্তু সার্ভিসে boolean ডিফাইন থাকলে (isFeatured: true) দিন।
-   */
+
   const { data: responseData, error } = await mealService.getMeals(
     {
-      isFeatured: true, // Type error ফিক্স করতে সরাসরি boolean ব্যবহার করুন
+      isFeatured: true, 
       limit: limit.toString(),
     },
     { revalidate: 60 }
   );
 
-  /**
-   * ২. টাইপ এরর ফিক্সিং (Property 'data' does not exist):
-   * responseData কে 'any' অথবা নির্দিষ্ট ইন্টারফেসে কাস্ট করে নিলে 
-   * 'data' প্রপার্টি অ্যাক্সেস করা সম্ভব হবে।
-   */
   const result = responseData as any;
   let meals: Meal[] = [];
 
   if (Array.isArray(result)) {
-    // যদি এপিআই সরাসরি অ্যারে রিটার্ন করে
     meals = result;
   } else if (result && result.data && Array.isArray(result.data)) {
-    // যদি এপিআই { success: true, data: [...] } ফরম্যাটে পাঠায়
     meals = result.data;
   }
 
-  // ৩. এরর হ্যান্ডলিং বা এম্পটি স্টেট
   if (error || meals.length === 0) {
     return (
       <section className="py-16 container mx-auto px-4">
@@ -49,7 +37,6 @@ const FeaturedMeals = async ({ limit = 3 }: FeaturedMealsProps) => {
     );
   }
 
-  // স্লাইস করে লিমিট সেট করা
   const displayedMeals = meals.slice(0, limit);
 
   return (
@@ -66,7 +53,6 @@ const FeaturedMeals = async ({ limit = 3 }: FeaturedMealsProps) => {
         </Button>
       </div>
 
-      {/* ৪. মিল কার্ড গ্রিড */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {displayedMeals.map((meal) => (
           <MealCard key={meal.id} meal={meal} />

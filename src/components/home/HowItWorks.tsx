@@ -40,7 +40,6 @@ const HowItWorks = () => {
               <p className="text-slate-600 leading-relaxed max-w-xs mx-auto">
                 {step.description}
               </p>
-              {/* ডেকোরেশন লাইন (ডেস্কটপে দেখাবে) */}
               {step.id !== 3 && (
                 <div className="hidden lg:block absolute top-10 left-[65%] w-full h-[2px] border-t-2 border-dashed border-slate-200 -z-10"></div>
               )}

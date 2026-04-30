@@ -5,13 +5,11 @@ import Image from "next/image";
 const Hero = () => {
   return (
     <section className="relative bg-slate-50 py-12 md:py-20 lg:py-28 overflow-hidden">
-      {/* ব্যাকগ্রাউন্ড ডেকোরেশন */}
       <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-orange-100 rounded-full blur-3xl opacity-50"></div>
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col md:flex-row items-center gap-10 lg:gap-16">
           
-          {/* লেফট কন্টেন্ট (টেক্সট) */}
           <div className="flex-1 space-y-6 text-center md:text-left">
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1]">
               Freshly Made <br /> 
@@ -32,9 +30,7 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* রাইট কন্টেন্ট (ইমেজ) */}
           <div className="flex-1 relative w-full h-[350px] md:h-[450px] lg:h-[500px]">
-            {/* ব্লার ইফেক্ট */}
             <div className="absolute -inset-4 bg-orange-300 rounded-full blur-3xl opacity-20 animate-pulse"></div>
             
             <div className="relative w-full h-full group">
@@ -45,7 +41,6 @@ const Hero = () => {
                 priority
                 className="object-cover rounded-[2rem] shadow-2xl relative z-10 transition-transform duration-700 group-hover:scale-[1.02]"
               />
-              {/* ইমেজের ওপর হালকা একটি গ্রেডিয়েন্ট ওভারলে (লুক ভালো করার জন্য) */}
               <div className="absolute inset-0 bg-gradient-to-tr from-orange-600/10 to-transparent rounded-[2rem] z-20 pointer-events-none"></div>
             </div>
           </div>

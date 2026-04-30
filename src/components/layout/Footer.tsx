@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   UtensilsCrossed,
   Facebook,
-  Twitter,
   Instagram,
   Github,
   Heart,
@@ -11,12 +10,11 @@ import {
 const Footer = () => {
   return (
     <footer className="bg-slate-50 border-t border-slate-200">
-      {/* প্যাডিং কমিয়ে py-8 md:py-10 করা হয়েছে */}
       <div className="container mx-auto px-4 py-8 md:py-10">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center md:text-left">
           
           {/* Column 1: Brand & About */}
-          <div className="col-span-1 space-y-3">
+          <div className="col-span-1 space-y-3 flex flex-col items-center md:items-start">
             <Link href="/" className="flex items-center space-x-2 group">
               <div className="bg-orange-600 p-1.5 rounded-lg group-hover:rotate-12 transition-transform shadow-sm">
                 <UtensilsCrossed className="h-5 w-5 text-white" />
@@ -31,7 +29,7 @@ const Footer = () => {
           </div>
 
           {/* Column 2: Quick Links */}
-          <div>
+          <div className="flex flex-col items-center md:items-start">
             <h3 className="font-semibold text-slate-900 mb-3 uppercase tracking-wider text-xs">
               Quick Links
             </h3>
@@ -55,7 +53,7 @@ const Footer = () => {
           </div>
 
           {/* Column 3: Support */}
-          <div>
+          <div className="flex flex-col items-center md:items-start">
             <h3 className="font-semibold text-slate-900 mb-3 uppercase tracking-wider text-xs">
               Support
             </h3>
@@ -79,11 +77,11 @@ const Footer = () => {
           </div>
 
           {/* Column 4: Newsletter */}
-          <div>
+          <div className="flex flex-col items-center md:items-start">
             <h3 className="font-semibold text-slate-900 mb-3 uppercase tracking-wider text-xs">
               Stay Updated
             </h3>
-            <div className="flex gap-2 mt-2">
+            <div className="flex gap-2 mt-2 w-full max-w-xs md:max-w-none">
               <input
                 type="email"
                 placeholder="Email"
@@ -96,9 +94,9 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom Section - প্যাডিং এবং গ্যাপ কমানো হয়েছে */}
+        {/* Bottom Section */}
         <div className="mt-10 pt-6 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-center md:text-left">
+          <div className="text-center md:text-left flex flex-col items-center md:items-start">
             <p className="text-xs text-slate-500 font-medium">
               © {new Date().getFullYear()} FoodHub Inc. All rights reserved.
             </p>

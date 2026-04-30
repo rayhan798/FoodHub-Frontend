@@ -7,7 +7,7 @@ export default async function HomePage() {
   return (
     <>
       <Hero />
-      <HowItWorks /> {/* এটি হিরো সেকশনের নিচে দিলে ভালো দেখাবে */}
+      <HowItWorks /> 
       <Categories />
       <FeaturedMeals />
     </>
